@@ -1,11 +1,13 @@
 from flask import Flask, redirect, render_template, request, session, url_for
 from pymongo import MongoClient
 from flask_session import Session
-
+import certifi
 
 app = Flask(__name__)
 
-client = MongoClient('mongodb+srv://admin:ZpUZTANwaOIeQaG2@moviology.asjwyhf.mongodb.net/?retryWrites=true&w=majority')
+client = MongoClient('mongodb+srv://kacper:D3DC9NwlRk3wUG2m@moviology.asjwyhf.mongodb.net/?retryWrites=true&w=majority', tlsCAFile=certifi.where())
+#tlsCAFile is a workaround to prevent 'ServerSelectionTimeoutError' #https://www.mongodb.com/community/forums/t/keep-getting-serverselectiontimeouterror/126190/6
+
 #client object for a MongoDB instance called client, which allows you to connect and interact with your MongoDB server
 #When you instantiate the MongoClient(), you pass it the host of your MongoDB server, which is mongodb+srv...... in our case
 
@@ -21,12 +23,9 @@ testData = {
   "heart_rate": [100,120,109,112],
   "sweat": [0,5,6,12],
   "machine_id": 128219
-} #dictionary
-
+}
 
 #print(bioData.find_one({ "machine_id": 842 }))
-
-
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
@@ -37,11 +36,10 @@ Session(app)
 def index():
     if request.method == 'POST':
         # machine_id = request.form['machine_id']
-
+        bioData.insert_one(testData)
         return redirect(url_for('index'))
 
     allBioData = bioData.find()
-    bioData.insert_one(testData)
     #To display all the saved bioData, you use the find() method outside the code
     #responsible for handling POST requests, which returns all the biometric data available in the 'DATASETS' collection
 
