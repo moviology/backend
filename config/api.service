@@ -1,0 +1,11 @@
+[Unit]
+After=network.target
+
+[Service]
+User=root
+Group=www-data
+WorkingDirectory=/home/backend
+ExecStart=gunicorn -w 3 wsgi:app --chdir /home/backend
+
+[Install]
+WantedBy=multi-user.target
