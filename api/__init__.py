@@ -87,6 +87,27 @@ all_users_data = users_data.find()
 # for entry in testBioData:  # finding many documents
 #     print(entry)
 #
+# GETS ALL REVIEWS DOCUMENTS ALONG WITH ALL THE APPROPRIATE DATASET, USERS, AND MOVIE DOCUMENTS
+# aggregate_all_data_from_reviews_collection = reviews_data.aggregate([
+#     {"$lookup": {"from": 'DATASETS', "localField": 'dataset_id', "foreignField": "dataset_id", "as": "dataset_id"}},
+#     {"$lookup": {"from": 'MOVIES', "localField": 'movie_id', "foreignField": "movie_id", "as": "movie_id"}},
+#     {"$lookup": {"from": 'USERS', "localField": 'user_id', "foreignField": "user_id", "as": "user_id"}}
+# ])
+#
+# PRINTS OUT THE aggregate_all_data_from_reviews_collection DATA
+# print("all data" + dumps(aggregate_all_data_from_reviews_collection))
+#
+#  GETS THE REVIEWS DOCUMENT BY REVIEW_ID ALONG WITH ALL THE APPROPRIATE DATASET, USERS, AND MOVIE DOCUMENTS
+# aggregate_all_data_from_reviews_collection_by_id = reviews_data.aggregate([
+#     {"$match": {"review_id": 282}},
+#     {"$lookup": {"from": 'DATASETS', "localField": 'dataset_id', "foreignField": "dataset_id", "as": "dataset_id"}},
+#     {"$lookup": {"from": 'MOVIES', "localField": 'movie_id', "foreignField": "movie_id", "as": "movie_id"}},
+#     {"$lookup": {"from": 'USERS', "localField": 'user_id', "foreignField": "user_id", "as": "user_id"}}
+# ])
+#
+# PRINTS OUT THE aggregate_all_data_from_reviews_collection_by_id DATA
+# print("data by id" + dumps(aggregate_all_data_from_reviews_collection_by_id))
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
