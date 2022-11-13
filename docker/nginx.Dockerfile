@@ -9,6 +9,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt update && apt upgrade -y
 
 RUN apt install -y build-essential \
+   systemctl \
    nginx \
    python3 \
    python3-dev \
@@ -40,29 +41,29 @@ RUN rm -f /etc/nginx/sites-enabled/default \
 
 COPY ./config/nginx.conf /etc/nginx/conf.d/nginx.conf
 
-RUN service nginx restart \
-   && nginx -s reload -t \
-   && nginx -s reload
-
 
 #####################
 # set up supervisor #
 #####################
 RUN rm -f /etc/supervisor/conf.d/* \
-   && mkdir /var/log/api \
-   && touch /var/log/api/api.out.log \
-   && touch /var/log/api/api.err.log
+   && mkdir -p /var/log/supervisor \
+   && touch /var/log/supervisor/api.out.log \
+   && touch /var/log/supervisor/api.err.log
 
 COPY ./config/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 
-RUN ln -sf /proc/self/fd/1 /var/log/api/api.out.log \
-   && ln -sf /proc/self/fd/1/var/log/api/api.err.log 
+
+###################
+# display logfile #
+###################
+#! Not working
+RUN ln -sf /proc/self/fd/1 /var/log/gunicorn/access.log \
+   && ln -sf /proc/self/fd/2 /var/log/gunicorn/error.log
 
 
-#############
-# start app #
-#############
+######################
+# copy project files #
+######################
 EXPOSE 80
 COPY ./ /home/backend
 WORKDIR /home/backend
-CMD gunicorn -w 3 api:app -b :80
