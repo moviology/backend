@@ -108,14 +108,14 @@ all_users_data = users_data.find()
 # PRINTS OUT THE aggregate_all_data_from_reviews_collection_by_id DATA
 # print("data by id" + dumps(aggregate_all_data_from_reviews_collection_by_id))
 #
-# // max timestamp in all DATASETS documents
+# max timestamp in all DATASETS documents
 # db.DATASETS.aggregate([
 #     { "$project":
 #         {"dataset_id": 1, "max_timestamp": { "$max": "$timestamp" }}
 #     }
 # ])
 #
-# // max timestamp by dataset id
+# max timestamp by dataset id
 # db.DATASETS.aggregate([
 #     {"$match": { "dataset_id": 1 } },
 #     { "$project":
@@ -123,14 +123,14 @@ all_users_data = users_data.find()
 #     }
 # ])
 #
-# // max heart rate in all DATASETS documents
+# max heart rate in all DATASETS documents
 # db.DATASETS.aggregate([
 #     { "$project":
 #         {"dataset_id": 1, "max_heart_rate": { "$max": "$heart_rate" }}
 #     }
 # ])
 #
-# // max heart rate by dataset id
+# max heart rate by dataset id
 # db.DATASETS.aggregate([
 #     {"$match": { "dataset_id": 1 } },
 #     { "$project":
@@ -138,14 +138,14 @@ all_users_data = users_data.find()
 #     }
 # ])
 #
-# // max sweat in all DATASETS documents
+# max sweat in all DATASETS documents
 # db.DATASETS.aggregate([
 #     { "$project":
 #         {"dataset_id": 1, "max_sweat": { "$max": "$sweat" }}
 #     }
 # ])
 #
-# // max sweat rate by dataset id
+# max sweat rate by dataset id
 # db.DATASETS.aggregate([
 #     {"$match": { "dataset_id": 1 } },
 #     { "$project":
@@ -153,14 +153,14 @@ all_users_data = users_data.find()
 #     }
 # ])
 #
-# // min timestamp in all DATASETS documents
+# min timestamp in all DATASETS documents
 # db.DATASETS.aggregate([
 #     { "$project":
 #         {"dataset_id": 1, "min_timestamp": { "$min": "$timestamp" }}
 #     }
 # ])
 #
-# // min timestamp by dataset id
+# min timestamp by dataset id
 # db.DATASETS.aggregate([
 #     {"$match": { "dataset_id": 1 } },
 #     { "$project":
@@ -168,14 +168,14 @@ all_users_data = users_data.find()
 #     }
 # ])
 #
-# // min heart rate in all DATASETS documents
+# min heart rate in all DATASETS documents
 # db.DATASETS.aggregate([
 #     { "$project":
 #         {"dataset_id": 1, "min_heart_rate": { "$min": "$heart_rate" }}
 #     }
 # ])
 #
-# // min heart rate by dataset id
+# min heart rate by dataset id
 # db.DATASETS.aggregate([
 #     {"$match": { "dataset_id": 1 } },
 #     { "$project":
@@ -183,14 +183,14 @@ all_users_data = users_data.find()
 #     }
 # ])
 #
-# // min sweat in all DATASETS documents
+# min sweat in all DATASETS documents
 # db.DATASETS.aggregate([
 #     { "$project":
 #         {"dataset_id": 1, "min_sweat": { "$min": "$sweat" }}
 #     }
 # ])
 #
-# // min sweat rate by dataset id
+# min sweat rate by dataset id
 # db.DATASETS.aggregate([
 #     {"$match": { "dataset_id": 1 } },
 #     { "$project":
@@ -198,6 +198,27 @@ all_users_data = users_data.find()
 #     }
 # ])
 #
+# max user_id in USERS collection
+# db.USERS.aggregate([
+#     {"$group": {
+#         "_id": "$user_id",
+#         "max_user_id": {"$max": "$user_id"}
+#         }
+#     },
+#     {"$sort" :{"_id" :-1}},
+#     {"$limit": 1}
+# ])
+#
+# min user_id in USERS collection
+# db.USERS.aggregate([
+#     {"$group": {
+#         "_id": "$user_id",
+#         "min_user_id": {"$min": "$user_id"}
+#         }
+#     },
+#     {"$sort" :{"_id" : 1}},
+#     {"$limit": 1}
+# ])
 
 
 @app.route("/", methods=["GET", "POST"])
