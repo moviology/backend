@@ -1,1 +1,4 @@
 .git/*
+docker/*
+docker.ps1
+flask_session
