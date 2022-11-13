@@ -1,0 +1,75 @@
+// Testing Data
+
+db.DATASETS.insertMany([
+  { dataset_id: 1, timestamp: [1, 2, 3, 4, 5], heart_rate: [40, 42, 41, 48, 47], sweat: [5, 6, 7, 6, 6], machine_id: 842},
+  { dataset_id: 2, timestamp: [32, 33, 34, 35, 36], heart_rate: [50, 52, 51, 58, 57], sweat: [10, 11, 12, 11, 11], machine_id: 842},
+    { dataset_id: 3, timestamp: [27, 28 , 29, 30, 31], heart_rate: [90, 91, 91, 92, 90], sweat: [4, 5, 6, 6, 5], machine_id: 843}
+]);
+
+
+
+//Test Queries
+
+//T1.1 Adding an incorrect id
+db.DATASETS.insertOne({dataset_id: te, timestamp: [23, 34, 37, 40], heart_rate: [34, 67, 64, 78], sweat: [5,2,6,3], machine_id:453});
+
+//T1.2 Adding an incorrect timestamp
+db.DATASETS.insertOne({dataset_id: 4, timestamp: [23, 34, te, 37, 40], heart_rate: [34, 67, 64, 78], sweat: [5,2,6,3], machine_id:453});
+
+//T1.3 Adding an incorrect heart rate
+db.DATASETS.insertOne({dataset_id: 4, timestamp: [23, 34, 37, 40], heart_rate: [34, 67, te, 64, 78], sweat: [5,2,6,3], machine_id:453});
+
+//T1.4 Adding an incorrect sweat
+db.DATASETS.insertOne({dataset_id: 4, timestamp: [23, 34, 37, 40], heart_rate: [34, 67, 64, 78], sweat: [5,2, te,6,3], machine_id:453});
+
+//T1.5 Adding an incorrect machine id
+db.DATASETS.insertOne({dataset_id: 4, timestamp: [23, 34, 37, 40], heart_rate: [34, 67, 64, 78], sweat: [5,2,6,3], machine_id:te});
+
+//T2.1 Deleting one entry
+db.DATASETS.deleteOne({dataset_id: 2})
+
+//T2.2 Deleting multiple entry
+db.DATASETS.deleteMany({category: "machine_id"})
+
+//T3.1 Update one entry "Dataset_id"
+db.DATASETS.updateOne({dataset_id: 1}, {$set:{dataset_id: 1}}) 
+
+//T3.2 Update one entry "Timestamp"
+db.DATASETS.updateOne({dataset_id: 1}, {$set:{timestamp: [23,53,63,21]}}) 
+
+//T3.3 Update one entry "Heart Rate"
+db.DATASETS.updateOne({dataset_id: 1}, {$set:{heart_rate: [23,74,35,73]}}) 
+
+//T3.4 Update one entry "Sweat"
+db.DATASETS.updateOne({dataset_id: 1}, {$set:{sweat: [2,6,9,3]}}) 
+
+//T3.5 Update one entry "Machine ID"
+db.DATASETS.updateOne({dataset_id: 1}, {$set:{machine_id:4}}) 
+
+//T3.2 Update maltiple entry
+db.DATASETS.updateMany({}, {$inc:{dataset_id:1}})
+
+//T4 Insert data if can not be found on search
+db.DATESETS.updateOne( 
+  { dataset_id: 4 }, 
+  {
+    $set: 
+      {
+        dataset_id: 4,
+		timestamp: [23, 34, 37, 40], 
+		heart_rate: [34, 67, 64, 78], 
+		sweat: [5, 2, 6, 3], 
+		machine_id: 844
+      }
+  }, 
+  { upsert: true }
+)
+
+//T5.1 Find all the timestamp values
+db.DATASETS.find({}, { _id: 0, timestamp: 1 })
+
+//T5.2 Find all the heart rate values
+db.DATASETS.find({}, { _id: 0, heart_rate: 1 })
+
+//T5.3 Find all the sweat values
+db.DATASETS.find({}, { _id: 0, sweat: 1 })
