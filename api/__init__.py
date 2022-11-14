@@ -1,11 +1,15 @@
-from flask import Flask, redirect, render_template, request, session, url_for
-from pymongo import MongoClient
-from flask_session import Session
+import json
+import random
+import string
+import certifi
+
+from datetime import date
 from urllib.parse import quote_plus
 from bson.json_util import dumps
-import json
-import certifi
+from flask import Flask, redirect, render_template, request, session
+from flask_session import Session
 from passlib.hash import sha256_crypt
+from pymongo import MongoClient
 
 with open("../config/.secrets.json") as config_file:
     config = json.load(config_file)
@@ -220,6 +224,7 @@ all_users_data = users_data.find()
 #     {"$limit": 1}
 # ])
 
+# max user_id in USERS collection
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -275,6 +280,51 @@ def login():
 def logout():
     session["name"] = None
     return redirect("/")
+
+
+@app.route("/book", methods=['GET', 'POST'])
+def book():
+    possible_genres = ["Adventure", "Comedy", "Action", "Sci-Fi"]
+
+    if not session.get("name"):
+        return redirect("/login")
+
+    if request.method == "POST":
+        name = request.form.get("name")
+        genres = []
+        movie_id = get_random_string(50)
+
+        for genre in possible_genres:
+            if request.form.get(genre) is not None:
+                genres.append(genre)
+
+        new_movie = {
+            "_id": movie_id,
+            "name": name,
+            "genre": genres,
+            "user_id": session["name"]
+        }
+        movies_data.insert_one(new_movie)
+
+        description = request.form.get("description")
+        dataset_id = get_random_string(50)
+
+        new_review = {
+            "description": description,
+            "date": str(date.today()),
+            "user_id": session["name"],
+            "dataset_id": dataset_id,
+            "movie_id": movie_id
+        }
+        reviews_data.insert_one(new_review)
+
+    return render_template("bookReview.html", possibleGenres=possible_genres)
+
+
+def get_random_string(length):
+    letters = string.ascii_lowercase
+    result_str = ''.join(random.choice(letters) for _ in range(length))
+    return result_str
 
 
 if __name__ == "__main__":
