@@ -287,14 +287,10 @@ def my_reviews():
     if not session.get("name"):
         return redirect("/login")
 
-    #user_reviews = reviews_data.find({"user_id": session['name']})
     all_reviews = []
-
     user_reviews = reviews_data.aggregate([
         {"$match": {"user_id": session['name']}},
-        #{"$lookup": {"from": 'DATASETS', "localField": 'dataset_id', "foreignField": "dataset_id", "as": "dataset_id"}},
         {"$lookup": {"from": 'MOVIES', "localField": 'movie_id', "foreignField": "_id", "as": "movie_id"}},
-        #{"$lookup": {"from": 'USERS', "localField": 'user_id', "foreignField": "user_id", "as": "user_id"}}
     ])
 
     for review in user_reviews:
@@ -305,8 +301,13 @@ def my_reviews():
         except IndexError:
             print("Invalid variable name for movie_id")
 
-
     return render_template("reviews.html", user_reviews=all_reviews)
+
+
+@app.route("/view_biodata/<dataset_id>", methods=['GET', 'POST'])
+def view_biodata(dataset_id):
+    biodata = bio_data.find({"dataset_id": dataset_id})
+    return render_template("biodata.html", biodata=biodata)
 
 
 @app.route("/book", methods=['GET', 'POST'])
