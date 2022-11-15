@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+    {% for review in user_reviews %}
+    <div style="border:1em solid black;">
+        <a href='/view_biodata/{{review["dataset_id"]}}'> <h1>{{ review['movie_id'][0]['name'] }}</h1></a>
+
+        <br>
+        {{ review['description'] }}
+
+        {% if review['movie_id'][0]['genre'] is not none %}
+            <ul>
+            {% for genre in review['movie_id'][0]['genre'] %}
+                <li>{{genre}}</li>
+            {% endfor %}
+            </ul>
+            <br>
+        {% endif %}
+        </div>
+    {% endfor %}
+
+</body>
+</html>

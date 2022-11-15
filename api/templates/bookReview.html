@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <form action="/book" method="post">
+    <input autocomplete="off" autofocus name="name" placeholder="Name of Movie" type="text">
+    <input autocomplete="off" autofocus name="description" placeholder="Movie Description" type="text">
+
+    {% for genre in possibleGenres %}
+      <input type="checkbox" name="{{genre}}" value="{{genre}}">{{genre}}<br>
+    {% endfor %}
+    <input type="submit">
+  </form>
+</body>
+</html>

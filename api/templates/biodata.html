@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<br>
+
+    {% for entry in biodata %}
+<div style="border:1em solid black;">
+  {{entry['timestamp']}} <br>
+  {{entry['heart_rate']}} <br>
+  {{entry['sweat']}} <br>
+  {{entry['machine_id']}} <br>
+    </div>
+    {% endfor %}
+
+</body>
+</html>
