@@ -5,7 +5,6 @@ import certifi
 
 from datetime import date
 from urllib.parse import quote_plus
-from bson.json_util import dumps
 from flask import Flask, redirect, render_template, request, session
 from flask_session import Session
 from passlib.hash import sha256_crypt
@@ -230,7 +229,8 @@ all_users_data = users_data.find()
 def index():
     if not session.get("name"):
         return redirect("/login")
-    return {"server_data": dumps(all_bio_data)}
+    # return {"server_data": dumps(all_bio_data)}
+    return render_template("index.html")
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -280,6 +280,33 @@ def login():
 def logout():
     session["name"] = None
     return redirect("/")
+
+
+@app.route("/my_reviews")
+def my_reviews():
+    if not session.get("name"):
+        return redirect("/login")
+
+    #user_reviews = reviews_data.find({"user_id": session['name']})
+    all_reviews = []
+
+    user_reviews = reviews_data.aggregate([
+        {"$match": {"user_id": session['name']}},
+        #{"$lookup": {"from": 'DATASETS', "localField": 'dataset_id', "foreignField": "dataset_id", "as": "dataset_id"}},
+        {"$lookup": {"from": 'MOVIES', "localField": 'movie_id', "foreignField": "_id", "as": "movie_id"}},
+        #{"$lookup": {"from": 'USERS', "localField": 'user_id', "foreignField": "user_id", "as": "user_id"}}
+    ])
+
+    for review in user_reviews:
+        print(review)
+        try:
+            print(review['movie_id'][0]['name'])
+            all_reviews.append(review)
+        except IndexError:
+            print("Invalid variable name for movie_id")
+
+
+    return render_template("reviews.html", user_reviews=all_reviews)
 
 
 @app.route("/book", methods=['GET', 'POST'])
