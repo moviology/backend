@@ -12,12 +12,13 @@ from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
 from datetime import date
 from urllib.parse import quote_plus
-from flask import Flask, redirect, render_template, request, session
+from flask import Flask, redirect, render_template, request, session, jsonify
 from flask_session import Session
+from flask_cors import CORS
 from passlib.hash import sha256_crypt
 from pymongo import MongoClient
 
-with open("../config/.secrets.json") as config_file:
+with open("config/.secrets.json") as config_file:
     config = json.load(config_file)
 
 # with open('hello', 'r') as f:
@@ -38,8 +39,11 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = config.get("SECRET_KEY")
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 Session(app)
+
+CORS(app)
 
 uri = "mongodb+srv://%s:%s@%s.asjwyhf.mongodb.net/?retryWrites=true&w=majority" % (
     quote_plus(config.get("MONGO_USER")),
@@ -291,10 +295,11 @@ class MySubscribeCallback(SubscribeCallback):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    if not session.get("name"):
-        return redirect("/login")
+   #  if not session.get("name"):
+      #   return redirect("/login")
     # return {"server_data": dumps(all_bio_data)}
-    return render_template("index.html")
+    #return render_template("index.html")
+    return dumps(all_bio_data)
 
 
 @app.route("/register", methods=['GET', 'POST'])
