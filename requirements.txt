@@ -3,3 +3,4 @@ flask_session
 pymongo==4.3.2
 certifi~=2022.9.24
 passlib~=1.7.4
+pubnub~=7.0.1

@@ -1,8 +1,15 @@
 import json
 import random
 import string
+import time
 import certifi
+import threading
 
+from bson.json_util import dumps, loads
+from pubnub.callbacks import SubscribeCallback
+from pubnub.enums import PNStatusCategory, PNOperationType
+from pubnub.pnconfiguration import PNConfiguration
+from pubnub.pubnub import PubNub
 from datetime import date
 from urllib.parse import quote_plus
 from flask import Flask, redirect, render_template, request, session
@@ -12,6 +19,20 @@ from pymongo import MongoClient
 
 with open("../config/.secrets.json") as config_file:
     config = json.load(config_file)
+
+# with open('hello', 'r') as f:
+#     print(f.read())
+
+
+pnconfig = PNConfiguration()
+pnconfig.subscribe_key = 'sub-c-7e0595fb-09cc-4333-b707-b20f4a6b96cd'
+pnconfig.publish_key = 'pub-c-60cb8668-e930-4e11-bb2e-65996cf9d14a'
+pnconfig.user_id = "Kacper-device"
+pubnub = PubNub(pnconfig)
+
+added_listener = False
+
+my_channel = 'Moviology-Channel'
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = config.get("SECRET_KEY")
@@ -225,6 +246,49 @@ all_users_data = users_data.find()
 
 # max user_id in USERS collection
 
+def my_publish_callback(envelope, status):
+    # Check whether request successfully completed or not
+    if not status.is_error():
+        pass  # Message successfully published to specified channel.
+    else:
+        pass  # Handle message publish error. Check 'category' property to find out possible issue
+        # because of which request did fail.
+        # Request can be resent using: [status retry];
+
+
+class MySubscribeCallback(SubscribeCallback):
+    def presence(self, pubnub, presence):
+        pass  # handle incoming presence data
+
+    def status(self, pubnub, status):
+        if status.category == PNStatusCategory.PNUnexpectedDisconnectCategory:
+            pass  # This event happens when radio / connectivity is lost
+        elif status.category == PNStatusCategory.PNConnectedCategory:
+            # Connect event. You can do stuff like publish, and know you'll get it.
+            # Or just use the connected event to confirm you are subscribed for
+            # UI / internal notifications, etc
+            pubnub.publish().channel(my_channel).message('[{"name":"Ram", "email":"Ram@gmail.com"}, {"name":"Bob", "email":"bob32@gmail.com"}]').pn_async(my_publish_callback)
+        elif status.category == PNStatusCategory.PNReconnectedCategory:
+            pass
+            # Happens as part of our regular operation. This event happens when
+            # radio / connectivity is lost, then regained.
+        elif status.category == PNStatusCategory.PNDecryptionErrorCategory:
+            pass
+            # Handle message decryption error. Probably client configured to
+            # encrypt messages and on live data feed it received plain text.
+
+    def message(self, pubnub, message):
+        # Handle new message stored in message.message
+        print(message.message)
+        try:
+            json_data = json.loads(message.message)
+            print(json_data[0]['name'])
+        except:
+            print("Incorrect format")
+
+        print(message.publisher)
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if not session.get("name"):
@@ -356,4 +420,13 @@ def get_random_string(length):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    moviology_thread = threading.Thread()
+    moviology_thread.start()
+
+    if not added_listener:
+        pubnub.add_listener(MySubscribeCallback())
+        print(added_listener)
+        added_listener = True
+
+    pubnub.subscribe().channels(my_channel).execute()
+    app.run(port=5000)
