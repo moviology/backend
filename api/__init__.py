@@ -26,14 +26,14 @@ with open("config/.secrets.json") as config_file:
 
 
 pnconfig = PNConfiguration()
-pnconfig.subscribe_key = 'sub-c-7e0595fb-09cc-4333-b707-b20f4a6b96cd'
-pnconfig.publish_key = 'pub-c-60cb8668-e930-4e11-bb2e-65996cf9d14a'
-pnconfig.user_id = "Kacper-device"
+pnconfig.subscribe_key = config.get("SUB_KEY")
+pnconfig.publish_key = config.get("PUB_KEY")
+pnconfig.user_id = config.get("UID")
 pubnub = PubNub(pnconfig)
 
 added_listener = False
 
-my_channel = 'Moviology-Channel'
+my_channel = config.get("CHANNEL")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = config.get("SECRET_KEY")
