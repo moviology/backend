@@ -43,9 +43,13 @@ function Systemd-Start {
       [Parameter(Mandatory=$true)]
       [string[]]$systemd_services
    )
-   $s = [system.String]::Join(" ", $systemd_services)
-   iex "docker-compose exec $compose_service systemctl enable $s"
-   iex "docker-compose exec $compose_service systemctl start $s"
+   try {
+      $s = [system.String]::Join(" ", $systemd_services)
+      iex "docker-compose exec $compose_service systemctl enable $s" -ErrorAction Stop
+      iex "docker-compose exec $compose_service systemctl start $s" -ErrorAction Stop
+   } catch {
+      throw "Error starting systemd services"
+   }
 }
 
 function Systemd-Stop {
@@ -56,8 +60,12 @@ function Systemd-Stop {
       [Parameter(Mandatory=$true)]
       [string[]]$systemd_services
    )
-   $s = [system.String]::Join(" ", $systemd_services)
-   iex "docker-compose exec $compose_service systemctl stop $s"
+   try {
+      $s = [system.String]::Join(" ", $systemd_services)
+      iex "docker-compose exec $compose_service systemctl stop $s" -ErrorAction Stop
+   } catch {
+      throw "Error stopping systemd services"
+   }
 }
 
 function Systemd-Status {
@@ -68,8 +76,12 @@ function Systemd-Status {
       [Parameter(Mandatory=$true)]
       [string[]]$systemd_services
    )
-   $s = [system.String]::Join(" ", $systemd_services)
-   iex "docker-compose exec $compose_service systemctl status $s" | Write-Host
+   try {
+      $s = [system.String]::Join(" ", $systemd_services)
+      iex "docker-compose exec $compose_service systemctl status $s" -ErrorAction Stop | Write-Host
+   } catch {
+      throw "Error getting systemd services status"
+   }
 }
 
 
