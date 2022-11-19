@@ -4,6 +4,7 @@ import string
 import time
 import certifi
 import threading
+import pymongo
 
 from bson.json_util import dumps, loads
 from pubnub.callbacks import SubscribeCallback
@@ -18,20 +19,14 @@ from flask_cors import CORS
 from passlib.hash import sha256_crypt
 from pymongo import MongoClient
 
-with open("config/.secrets.json") as config_file:
+with open("../config/.secrets.json") as config_file:
     config = json.load(config_file)
-
-# with open('hello', 'r') as f:
-#     print(f.read())
-
 
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = config.get("SUB_KEY")
 pnconfig.publish_key = config.get("PUB_KEY")
 pnconfig.user_id = config.get("UID")
 pubnub = PubNub(pnconfig)
-
-added_listener = False
 
 my_channel = config.get("CHANNEL")
 
@@ -67,188 +62,8 @@ all_reviews_data = reviews_data.find()
 all_users_data = users_data.find()
 
 
-# # CREATING TEST DATA
-# testData = {
-#     "dataset_id": 3,
-#     "timestamp": [3, 6, 9, 12, 15],
-#     "heart_rate": [100, 120, 109, 112],
-#     "sweat": [0, 5, 6, 12],
-#     "machine_id": 128219,
-# }
 
-# INSERTING TEST DATA INTO 'DATASETS' DATABASE
-# bio_data.insert_one(testData)
 
-# ITERATING THROUGH EACH ELEMENT IN all_bio_data
-# for bioentry in all_bio_data:
-#     #bioentry is dictionary
-#     print(bioentry['machine_id'])
-#     print(bioentry.items())
-
-# PRINTING DATA FROM ALL TABLES IN JSON FORMAT
-# print("Biometric data" + dumps(all_bio_data))
-# print("Movie data" + dumps(all_movies_data))
-# print("Review data" + dumps(all_reviews_data))
-# print("User data" + dumps(all_users_data))
-#
-# print("\nFinding many entries that share common value for variable")
-# for entry in bio_data.find({"machine_id": 128219}):  # finding many documents
-#     print(entry)
-#
-# print("\nCounting entries")
-# print(bio_data.count_documents({"machine_id": 128219}))
-#
-# # GETTING REVIEWS FOR A SINGLE MOVIE DIRECETOR USER
-# testUser = users_data.find_one({"name": "kacper"})
-# testUserId = testUser['user_id']
-# print(f"\nUser name: {testUser['name']}")
-# testReviews = reviews_data.find_one({"user_id": testUserId})
-# print(f"\nReview description: {testReviews['description']}")
-# testMovieId = testReviews['movie_id']
-# testMovie = movies_data.find_one({"movie_id": testMovieId})
-# print(f"\nMovie name: {testMovie['name']}")
-# testDatasetId = testReviews['dataset_id']
-# print(f"\nBiometric data")
-# testBioData = bio_data.find({"dataset_id": testDatasetId})
-#
-# # ITERATING THROUGH ALL THE BIOMETRIC DATA THAT CORRESPOND TO THE SELECTED REVIEW, USING 'dataset_id' AS FOREIGN KEY
-# for entry in testBioData:  # finding many documents
-#     print(entry)
-#
-# GETS ALL REVIEWS DOCUMENTS ALONG WITH ALL THE APPROPRIATE DATASET, USERS, AND MOVIE DOCUMENTS
-# aggregate_all_data_from_reviews_collection = reviews_data.aggregate([
-#     {"$lookup": {"from": 'DATASETS', "localField": 'dataset_id', "foreignField": "dataset_id", "as": "dataset_id"}},
-#     {"$lookup": {"from": 'MOVIES', "localField": 'movie_id', "foreignField": "movie_id", "as": "movie_id"}},
-#     {"$lookup": {"from": 'USERS', "localField": 'user_id', "foreignField": "user_id", "as": "user_id"}}
-# ])
-#
-# PRINTS OUT THE aggregate_all_data_from_reviews_collection DATA
-# print("all data" + dumps(aggregate_all_data_from_reviews_collection))
-#
-#  GETS THE REVIEWS DOCUMENT BY REVIEW_ID ALONG WITH ALL THE APPROPRIATE DATASET, USERS, AND MOVIE DOCUMENTS
-# aggregate_all_data_from_reviews_collection_by_id = reviews_data.aggregate([
-#     {"$match": {"review_id": 282}},
-#     {"$lookup": {"from": 'DATASETS', "localField": 'dataset_id', "foreignField": "dataset_id", "as": "dataset_id"}},
-#     {"$lookup": {"from": 'MOVIES', "localField": 'movie_id', "foreignField": "movie_id", "as": "movie_id"}},
-#     {"$lookup": {"from": 'USERS', "localField": 'user_id', "foreignField": "user_id", "as": "user_id"}}
-# ])
-#
-# PRINTS OUT THE aggregate_all_data_from_reviews_collection_by_id DATA
-# print("data by id" + dumps(aggregate_all_data_from_reviews_collection_by_id))
-#
-# max timestamp in all DATASETS documents
-# db.DATASETS.aggregate([
-#     { "$project":
-#         {"dataset_id": 1, "max_timestamp": { "$max": "$timestamp" }}
-#     }
-# ])
-#
-# max timestamp by dataset id
-# db.DATASETS.aggregate([
-#     {"$match": { "dataset_id": 1 } },
-#     { "$project":
-#         {"dataset_id": 1, "max_timestamp": { "$max": "$timestamp" }}
-#     }
-# ])
-#
-# max heart rate in all DATASETS documents
-# db.DATASETS.aggregate([
-#     { "$project":
-#         {"dataset_id": 1, "max_heart_rate": { "$max": "$heart_rate" }}
-#     }
-# ])
-#
-# max heart rate by dataset id
-# db.DATASETS.aggregate([
-#     {"$match": { "dataset_id": 1 } },
-#     { "$project":
-#         {"dataset_id": 1, "max_heart_rate": { "$max": "$heart_rate" }}
-#     }
-# ])
-#
-# max sweat in all DATASETS documents
-# db.DATASETS.aggregate([
-#     { "$project":
-#         {"dataset_id": 1, "max_sweat": { "$max": "$sweat" }}
-#     }
-# ])
-#
-# max sweat rate by dataset id
-# db.DATASETS.aggregate([
-#     {"$match": { "dataset_id": 1 } },
-#     { "$project":
-#         {"dataset_id": 1, "max_sweat": { "$max": "$sweat" }}
-#     }
-# ])
-#
-# min timestamp in all DATASETS documents
-# db.DATASETS.aggregate([
-#     { "$project":
-#         {"dataset_id": 1, "min_timestamp": { "$min": "$timestamp" }}
-#     }
-# ])
-#
-# min timestamp by dataset id
-# db.DATASETS.aggregate([
-#     {"$match": { "dataset_id": 1 } },
-#     { "$project":
-#         {"dataset_id": 1, "min_timestamp": { "$min": "$timestamp" }}
-#     }
-# ])
-#
-# min heart rate in all DATASETS documents
-# db.DATASETS.aggregate([
-#     { "$project":
-#         {"dataset_id": 1, "min_heart_rate": { "$min": "$heart_rate" }}
-#     }
-# ])
-#
-# min heart rate by dataset id
-# db.DATASETS.aggregate([
-#     {"$match": { "dataset_id": 1 } },
-#     { "$project":
-#         {"dataset_id": 1, "min_heart_rate": { "$min": "$heart_rate" }}
-#     }
-# ])
-#
-# min sweat in all DATASETS documents
-# db.DATASETS.aggregate([
-#     { "$project":
-#         {"dataset_id": 1, "min_sweat": { "$min": "$sweat" }}
-#     }
-# ])
-#
-# min sweat rate by dataset id
-# db.DATASETS.aggregate([
-#     {"$match": { "dataset_id": 1 } },
-#     { "$project":
-#         {"dataset_id": 1, "min_sweat": { "$min": "$sweat" }}
-#     }
-# ])
-#
-# max user_id in USERS collection
-# db.USERS.aggregate([
-#     {"$group": {
-#         "_id": "$user_id",
-#         "max_user_id": {"$max": "$user_id"}
-#         }
-#     },
-#     {"$sort" :{"_id" :-1}},
-#     {"$limit": 1}
-# ])
-#
-# min user_id in USERS collection
-# db.USERS.aggregate([
-#     {"$group": {
-#         "_id": "$user_id",
-#         "min_user_id": {"$min": "$user_id"}
-#         }
-#     },
-#     {"$sort" :{"_id" : 1}},
-#     {"$limit": 1}
-# ])
-
-# max user_id in USERS collection
 
 def my_publish_callback(envelope, status):
     # Check whether request successfully completed or not
@@ -258,6 +73,12 @@ def my_publish_callback(envelope, status):
         pass  # Handle message publish error. Check 'category' property to find out possible issue
         # because of which request did fail.
         # Request can be resent using: [status retry];
+
+
+heart_rate = []
+timestamp = []
+sweat = []
+machine_id = [0]
 
 
 class MySubscribeCallback(SubscribeCallback):
@@ -271,7 +92,11 @@ class MySubscribeCallback(SubscribeCallback):
             # Connect event. You can do stuff like publish, and know you'll get it.
             # Or just use the connected event to confirm you are subscribed for
             # UI / internal notifications, etc
-            pubnub.publish().channel(my_channel).message('[{"name":"Ram", "email":"Ram@gmail.com"}, {"name":"Bob", "email":"bob32@gmail.com"}]').pn_async(my_publish_callback)
+
+            # pubnub.publish().channel(my_channel).message([3, 6, 9, 398]).pn_async(my_publish_callback)
+            # pubnub.publish().channel(my_channel).message([5, 10, 15, 398]).pn_async(my_publish_callback)
+            # pubnub.publish().channel(my_channel).message([10, 20, 30, 398]).pn_async(my_publish_callback)
+            pass
         elif status.category == PNStatusCategory.PNReconnectedCategory:
             pass
             # Happens as part of our regular operation. This event happens when
@@ -282,24 +107,51 @@ class MySubscribeCallback(SubscribeCallback):
             # encrypt messages and on live data feed it received plain text.
 
     def message(self, pubnub, message):
-        # Handle new message stored in message.message
         print(message.message)
-        try:
-            json_data = json.loads(message.message)
-            print(json_data[0]['name'])
-        except:
-            print("Incorrect format")
+        if message.message == "stop":
+            latest_review = reviews_data.find_one(
+                sort=[('_id', pymongo.DESCENDING)]
+            )
+            print(latest_review)
 
+            new_biodata = {
+                "dataset_id": latest_review["dataset_id"],
+                "timestamp": timestamp,
+                "heart_rate": heart_rate,
+                "sweat": sweat,
+                "machine_id": machine_id[0]
+            }
+            print(new_biodata)
+
+            bio_data.insert_one(new_biodata)
+        elif type(message.message) == list:
+            # bio_object = json.loads(message.message)
+            # heart_rate.append(bio_object[0]["biodata"][0])
+            # sweat.append(bio_object[0]["biodata"][1])
+            # timestamp.append(bio_object[0]["biodata"][2])
+            # machine_id[0] = bio_object[0]["biodata"][3]
+
+            heart_rate.append(message.message[0])
+            sweat.append(message.message[1])
+            timestamp.append(message.message[2])
+            machine_id[0] = message.message[3]
+
+            print(heart_rate)
+            print(sweat)
+            print(timestamp)
+            print(machine_id)
+        else:
+            print("Invalid command")
         print(message.publisher)
+
+
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-   #  if not session.get("name"):
-      #   return redirect("/login")
-    # return {"server_data": dumps(all_bio_data)}
-    #return render_template("index.html")
-    return dumps(all_bio_data)
+    if not session.get("name"):
+        return redirect("/login")
+    return render_template("index.html")
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -363,12 +215,7 @@ def my_reviews():
     ])
 
     for review in user_reviews:
-        print(review)
-        try:
-            print(review['movie_id'][0]['name'])
-            all_reviews.append(review)
-        except IndexError:
-            print("Invalid variable name for movie_id")
+        all_reviews.append(review)
 
     return render_template("reviews.html", user_reviews=all_reviews)
 
@@ -427,11 +274,6 @@ def get_random_string(length):
 if __name__ == "__main__":
     moviology_thread = threading.Thread()
     moviology_thread.start()
-
-    if not added_listener:
-        pubnub.add_listener(MySubscribeCallback())
-        print(added_listener)
-        added_listener = True
-
+    pubnub.add_listener(MySubscribeCallback())
     pubnub.subscribe().channels(my_channel).execute()
     app.run(port=5000)
