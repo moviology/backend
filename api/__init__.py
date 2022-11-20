@@ -283,4 +283,4 @@ if __name__ == "__main__":
     moviology_thread.start()
     pubnub.add_listener(MySubscribeCallback())
     pubnub.subscribe().channels(my_channel).execute()
-    app.run(port=5000)
+    app.run(debug=True, port=5000)
