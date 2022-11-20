@@ -1,22 +1,37 @@
 {% extends "layout.html" %}
 {% block body %}
 
+     <center><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" style="background-color:#5C728A;margin-top:0.5em;margin-bottom:0.5em;">
+            <a href='/book'>Book Review</a>
+        </button>
+         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" style="background-color:#5C728A;margin-top:0.5em;margin-bottom:0.5em;">
+            <a href='/logout'>Logout</a>
+        </button>
+            </center>
+
     {% for review in user_reviews %}
-    <div style="border:1em solid black;">
-        <a href='/view_biodata/{{review["dataset_id"]}}'> <h1>{{ review['movie_id'][0]['name'] }}</h1></a>
 
-        <br>
-        {{ review['description'] }}
+    <div style="margin:auto;width:20%;border:0.15em solid black;margin-top:1em;margin-left:1em;border-radius:2em;background-color:whitesmoke; display:inline-block;right:0;">
 
+         <h1 class="font-medium leading-tight text-5xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;">{{ review['movie_id'][0]['name'] }}</a></h1>
+
+            <h3 class="font-medium leading-tight text-3xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;color:black;">Movie Description</h3>
+        <p style="margin-left:0.5em">{{ review['description'] }}</p>
+
+        <h3 class="font-medium leading-tight text-3xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;color:black;">Genres</h3>
         {% if review['movie_id'][0]['genre'] is not none %}
-            <ul>
+            <ul style="margin-left:0.3em">
             {% for genre in review['movie_id'][0]['genre'] %}
-                <li>{{genre}}</li>
+                <li style="margin-left:0.3em">{{genre}}</li>
             {% endfor %}
             </ul>
             <br>
         {% endif %}
+
+        <center><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" style="background-color:#5C728A;margin-top:0.5em;margin-bottom:0.5em;">
+            <a href='/view_biodata/{{review["dataset_id"]}}'>View Biometric Data</a>
+        </button>
+            </center>
         </div>
     {% endfor %}
-
 {% endblock %}

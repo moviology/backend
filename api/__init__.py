@@ -145,13 +145,11 @@ class MySubscribeCallback(SubscribeCallback):
         print(message.publisher)
 
 
-
-
 @app.route("/", methods=["GET", "POST"])
 def index():
     if not session.get("name"):
         return redirect("/authenticate")
-    return render_template("index.html")
+    return redirect("/my_reviews")
 
 
 @app.route("/register", methods=['GET', 'POST'])
@@ -284,3 +282,6 @@ if __name__ == "__main__":
     pubnub.add_listener(MySubscribeCallback())
     pubnub.subscribe().channels(my_channel).execute()
     app.run(debug=True, port=5000)
+
+
+
