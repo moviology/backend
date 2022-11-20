@@ -1,20 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>FlaskApp</title>
-    <style>
-        .todo {
-            padding: 20px;
-            margin: 10px;
-            background-color: #eee;
-        }
-    </style>
-</head>
-<body>
-    <h1>Index page</h1>
+{% extends "layout.html" %}
+{% block body %}
     <div class="content">
-    <a href="/login"><input type="button" value="Logout"></a>
+    <a href="/logout"><input type="button" value="Logout"></a>
     </div>
-</body>
-</html>
+{% endblock %}

@@ -150,7 +150,7 @@ class MySubscribeCallback(SubscribeCallback):
 @app.route("/", methods=["GET", "POST"])
 def index():
     if not session.get("name"):
-        return redirect("/login")
+        return redirect("/authenticate")
     return render_template("index.html")
 
 
@@ -175,8 +175,15 @@ def register():
             fetched_user = users_data.find_one({"email": user_email})
             session["name"] = fetched_user["_id"]
 
-            return render_template("registerSuccess.html")
+            return render_template("index.html")
     return render_template("register.html")
+
+
+@app.route("/authenticate", methods=["GET", "POST"])
+def authenticate():
+    if session.get("name"):
+        return render_template("index.html")
+    return render_template("authentication.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -193,7 +200,7 @@ def login():
             print("Logged in successfully")
             session["name"] = fetched_user["_id"]
 
-        return render_template("loginSuccess.html")
+        return render_template("index.html")
     return render_template("login.html")
 
 
@@ -206,7 +213,7 @@ def logout():
 @app.route("/my_reviews")
 def my_reviews():
     if not session.get("name"):
-        return redirect("/login")
+        return redirect("/authenticate")
 
     all_reviews = []
     user_reviews = reviews_data.aggregate([

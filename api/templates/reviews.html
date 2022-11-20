@@ -1,10 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "layout.html" %}
+{% block body %}
 
     {% for review in user_reviews %}
     <div style="border:1em solid black;">
@@ -24,5 +19,4 @@
         </div>
     {% endfor %}
 
-</body>
-</html>
+{% endblock %}
