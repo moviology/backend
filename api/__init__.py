@@ -62,9 +62,6 @@ all_reviews_data = reviews_data.find()
 all_users_data = users_data.find()
 
 
-
-
-
 def my_publish_callback(envelope, status):
     # Check whether request successfully completed or not
     if not status.is_error():
@@ -93,9 +90,9 @@ class MySubscribeCallback(SubscribeCallback):
             # Or just use the connected event to confirm you are subscribed for
             # UI / internal notifications, etc
 
-            # pubnub.publish().channel(my_channel).message([3, 6, 9, 398]).pn_async(my_publish_callback)
-            # pubnub.publish().channel(my_channel).message([5, 10, 15, 398]).pn_async(my_publish_callback)
-            # pubnub.publish().channel(my_channel).message([10, 20, 30, 398]).pn_async(my_publish_callback)
+            # pubnub.publish().channel(my_channel).message([3, 6, 9, 9999]).pn_async(my_publish_callback)
+            # pubnub.publish().channel(my_channel).message([5, 10, 15, 9999]).pn_async(my_publish_callback)
+            # pubnub.publish().channel(my_channel).message([10, 20, 30, 9999]).pn_async(my_publish_callback)
             pass
         elif status.category == PNStatusCategory.PNReconnectedCategory:
             pass
@@ -109,6 +106,7 @@ class MySubscribeCallback(SubscribeCallback):
     def message(self, pubnub, message):
         print(message.message)
         if message.message == "stop":
+            print("you have been stopped")
             latest_review = reviews_data.find_one(
                 sort=[('_id', pymongo.DESCENDING)]
             )
@@ -121,6 +119,7 @@ class MySubscribeCallback(SubscribeCallback):
                 "sweat": sweat,
                 "machine_id": machine_id[0]
             }
+            print("ABOUT TO SEND DATA")
             print(new_biodata)
 
             bio_data.insert_one(new_biodata)
@@ -133,8 +132,11 @@ class MySubscribeCallback(SubscribeCallback):
 
             heart_rate.append(message.message[0])
             sweat.append(message.message[1])
+
             timestamp.append(message.message[2])
             machine_id[0] = message.message[3]
+
+
 
             print(heart_rate)
             print(sweat)
@@ -281,7 +283,7 @@ if __name__ == "__main__":
     moviology_thread.start()
     pubnub.add_listener(MySubscribeCallback())
     pubnub.subscribe().channels(my_channel).execute()
-    app.run(debug=True, port=5000)
+    app.run(port=5000)
 
 
 
