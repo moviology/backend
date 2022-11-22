@@ -4,7 +4,7 @@ import json
 import certifi
 from pymongo.errors import WriteConcernError, WriteError
 
-with open("secrets.json") as config_file:
+with open("../config/.secrets.json") as config_file:
     config = json.load(config_file)
 
 uri = "mongodb+srv://%s:%s@%s.asjwyhf.mongodb.net/?retryWrites=true&w=majority" % (

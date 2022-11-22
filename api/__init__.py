@@ -4,6 +4,8 @@ import string
 import time
 import certifi
 import threading
+import plotly.express as px
+import pandas as pd
 import pymongo
 
 from bson.json_util import dumps, loads
@@ -136,8 +138,6 @@ class MySubscribeCallback(SubscribeCallback):
             timestamp.append(message.message[2])
             machine_id[0] = message.message[3]
 
-
-
             print(heart_rate)
             print(sweat)
             print(timestamp)
@@ -230,7 +230,35 @@ def my_reviews():
 @app.route("/view_biodata/<dataset_id>", methods=['GET', 'POST'])
 def view_biodata(dataset_id):
     biodata = bio_data.find({"dataset_id": dataset_id})
-    return render_template("biodata.html", biodata=biodata)
+
+    timestamps = []
+    heart_rates = []
+    sweats = []
+    dataset_id = "ipbtxxjifiugghkkiirjzhshlzjeibvjbijrogxaldghavaivxa"
+    data = bio_data.find({"dataset_id": dataset_id})
+
+    for x in data:
+        timestamps = x["timestamp"]
+        heart_rates = x["heart_rate"]
+        sweats = x["sweat"]
+
+    data_ = {"timestamps": timestamps, "heart_rate": heart_rates, "sweats": sweats}
+
+    df = pd.DataFrame(data_, columns=['timestamps', 'heart_rate', 'sweats'])
+
+    # heart rates data visualization
+    fig = px.line(df, x="timestamps", y="heart_rate", title='Graph Of Users Heart Rates Through The Movie',
+                  labels={'timestamps': 'timestamps in seconds',
+                          'heart_rate': 'heart rates in bpm'})
+    div = fig.to_html(full_html=False)
+
+    # sweat data visualization
+    fig2 = px.line(df, x="timestamps", y="sweats", title='Graph Of Users Sweat Through The Movie',
+                  labels={'timestamps': 'timestamps in seconds',
+                          'sweats': 'sweat'})
+    div2 = fig2.to_html(full_html=False)
+
+    return render_template("biodata.html", biodata=biodata, div=div, div2=div2)
 
 
 @app.route("/book", methods=['GET', 'POST'])
@@ -284,6 +312,3 @@ if __name__ == "__main__":
     pubnub.add_listener(MySubscribeCallback())
     pubnub.subscribe().channels(my_channel).execute()
     app.run(port=5000)
-
-
-

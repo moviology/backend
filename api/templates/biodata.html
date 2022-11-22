@@ -1,35 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
-
-
-
-
-
- {% for entry in biodata %}
-
-    <div style="margin:auto;width:20%;border:0.15em solid black;margin-top:1em;margin-left:1em;margin-right:1em;border-radius:2em;background-color:whitesmoke; display:inline-block;right:0;">
-
-         <h1 class="font-medium leading-tight text-5xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;">Machine ID: {{entry['machine_id']}}</h1>
-
-            <h3 class="font-medium leading-tight text-3xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;color:black;">Timestamp</h3>
-        <p style="margin-left:0.5em">{{entry['timestamp']}} </p>
-
-      <h3 class="font-medium leading-tight text-3xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;color:black;">Heartrate</h3>
-        <p style="margin-left:0.5em">{{entry['heart_rate']}} </p>
-
-      <h3 class="font-medium leading-tight text-3xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;color:black;">Sweat</h3>
-        <p style="margin-left:0.5em;margin-bottom:1em;">{{entry['sweat']}} </p>
-
-        </div>
-    {% endfor %}
-
-    {% for entry in biodata %}
-<div style="border:1em solid black;">
-  {{entry['timestamp']}} <br>
-  {{entry['heart_rate']}} <br>
-  {{entry['sweat']}} <br>
-  {{entry['machine_id']}} <br>
-    </div>
-    {% endfor %}
-
+    {{ div|safe }}
+    {{ div2|safe }}
 {% endblock %}
+
+
