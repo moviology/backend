@@ -8,30 +8,37 @@
             <a href='/logout'>Logout</a>
         </button>
             </center>
-
     {% for review in user_reviews %}
-
-    <div style="margin:auto;width:20%;border:0.15em solid black;margin-top:1em;margin-left:1em;border-radius:2em;background-color:whitesmoke; display:inline-block;right:0;">
-
-         <h1 class="font-medium leading-tight text-5xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;">{{ review['movie_id'][0]['name'] }}</h1>
-
-            <h3 class="font-medium leading-tight text-3xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;color:black;">Movie Description</h3>
-        <p style="margin-left:0.5em">{{ review['description'] }}</p>
-
-        <h3 class="font-medium leading-tight text-3xl mt-0 mb-2 text-blue-600" style="margin-left:0.3em;color:black;">Genres</h3>
+<div style="margin-left:1em;padding-bottom:1em;border-radius:1em;display:inline-block;" class="max-w-sm bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700" >
+    <a href="{{url_for('static',filename='images/sample.jpg')}}" target="_blank">
+        <img class="rounded-t-lg" src="{{url_for('static',filename='images/sample.jpg')}}" style="border-radius:1em 1em 0 0;" alt="" />
+    </a>
+    <div class="p-5" style="margin-left:1em;margin-right:1em;">
+            <h1 style="font-size:1.5em;text-align:center;" class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ review['movie_id'][0]['name'] }}</h1>
+        <h1 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Genres</h1>
         {% if review['movie_id'][0]['genre'] is not none %}
-            <ul style="margin-left:0.3em">
+            <ul style="margin-top:-0.5em;margin-bottom:0.5em;">
             {% for genre in review['movie_id'][0]['genre'] %}
-                <li style="margin-left:0.3em">{{genre}}</li>
+                <li style="display:inline-block">{{genre}},</li>
             {% endfor %}
             </ul>
-            <br>
         {% endif %}
+        <h1 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Description</h1>
+        <p style="margin-bottom:1em;margin-top:-0.5em;" class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ review['description'] }}</p>
+        <center>
+        <a style="background-color:#5C728A;" href='/view_biodata/{{review["dataset_id"]}}' class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            View Biometric Data
+            <svg aria-hidden="true" class="w-4 h-4 ml-2 -mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+        </a>
+        </center>
 
-        <center><button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" style="background-color:#5C728A;margin-top:0.5em;margin-bottom:0.5em;">
-            <a href='/view_biodata/{{review["dataset_id"]}}'>View Biometric Data</a>
-        </button>
-            </center>
-        </div>
-    {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+
+
+
+
+
 {% endblock %}

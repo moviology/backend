@@ -1,7 +1,14 @@
 {% extends "layout.html" %}
 {% block body %}
-    {{ div|safe }}
-    {{ div2|safe }}
+    {% if heartgraphs is not none %}
+        {% for heartgraph, sweatgraph in heartgraphs|zip(sweatgraphs )%}
+            <h1 style="text-align:center;font-size:2em;">Biometric Data Graphs </h1>
+            {{ heartgraph|safe }}
+            {{ sweatgraph|safe }}
+            <br>
+            <br>
+        {% endfor %}
+    {% endif %}
 {% endblock %}
 
 

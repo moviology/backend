@@ -20,6 +20,7 @@ from flask_session import Session
 from flask_cors import CORS
 from passlib.hash import sha256_crypt
 from pymongo import MongoClient
+import jinja2
 
 with open("../config/.secrets.json") as config_file:
     config = json.load(config_file)
@@ -37,6 +38,7 @@ app.config["SECRET_KEY"] = config.get("SECRET_KEY")
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config['CORS_HEADERS'] = 'Content-Type'
+app.jinja_env.filters['zip'] = zip
 
 Session(app)
 
@@ -229,36 +231,49 @@ def my_reviews():
 
 @app.route("/view_biodata/<dataset_id>", methods=['GET', 'POST'])
 def view_biodata(dataset_id):
-    biodata = bio_data.find({"dataset_id": dataset_id})
+    # biodata = bio_data.find({"dataset_id": dataset_id})
+    # dataset_id = "ipbtxxjifiugghkkiirjzhshlzjeibvjbijrogxaldghavaivxa"
 
-    timestamps = []
-    heart_rates = []
-    sweats = []
-    dataset_id = "ipbtxxjifiugghkkiirjzhshlzjeibvjbijrogxaldghavaivxa"
+    # timestamps = []
+    # heart_rates = []
+    # sweats = []
+
     data = bio_data.find({"dataset_id": dataset_id})
 
+    heart_graphs = []
+    sweat_graphs = []
+
+    count = 0
+
     for x in data:
+        print(x)
         timestamps = x["timestamp"]
         heart_rates = x["heart_rate"]
         sweats = x["sweat"]
 
-    data_ = {"timestamps": timestamps, "heart_rate": heart_rates, "sweats": sweats}
+        data_ = {"timestamps": timestamps, "heart_rate": heart_rates, "sweats": sweats}
 
-    df = pd.DataFrame(data_, columns=['timestamps', 'heart_rate', 'sweats'])
+        df = pd.DataFrame(data_, columns=['timestamps', 'heart_rate', 'sweats'])
 
-    # heart rates data visualization
-    fig = px.line(df, x="timestamps", y="heart_rate", title='Graph Of Users Heart Rates Through The Movie',
-                  labels={'timestamps': 'timestamps in seconds',
-                          'heart_rate': 'heart rates in bpm'})
-    div = fig.to_html(full_html=False)
+        # heart rates data visualization
+        fig = px.line(df, x="timestamps", y="heart_rate", title='Graph Of Users Heart Rates Through The Movie',
+                      labels={'timestamps': 'timestamps in seconds',
+                              'heart_rate': 'heart rates in bpm'})
+        div = fig.to_html(full_html=False)
 
-    # sweat data visualization
-    fig2 = px.line(df, x="timestamps", y="sweats", title='Graph Of Users Sweat Through The Movie',
-                  labels={'timestamps': 'timestamps in seconds',
-                          'sweats': 'sweat'})
-    div2 = fig2.to_html(full_html=False)
+        # sweat data visualization
+        fig2 = px.line(df, x="timestamps", y="sweats", title='Graph Of Users Sweat Through The Movie',
+                      labels={'timestamps': 'timestamps in seconds',
+                              'sweats': 'sweat'})
+        div2 = fig2.to_html(full_html=False)
 
-    return render_template("biodata.html", biodata=biodata, div=div, div2=div2)
+        heart_graphs.append(div)
+        sweat_graphs.append(div2)
+
+        count = count + 1
+        print(count)
+
+    return render_template("biodata.html", biodata=data, heartgraphs=heart_graphs, sweatgraphs=sweat_graphs)
 
 
 @app.route("/book", methods=['GET', 'POST'])
