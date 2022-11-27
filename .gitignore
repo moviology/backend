@@ -3,3 +3,4 @@ config/.secrets.json
 .env
 __pycache__
 flask_session
+venv
