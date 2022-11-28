@@ -18,11 +18,11 @@ from urllib.parse import quote_plus
 from flask import Flask, redirect, render_template, request, session, jsonify
 from flask_session import Session
 from flask_cors import CORS
+from flask_redoc import Redoc
 from passlib.hash import sha256_crypt
 from pymongo import MongoClient
-import jinja2
 
-with open("../config/.secrets.json") as config_file:
+with open("config/.secrets.json") as config_file:
     config = json.load(config_file)
 
 pnconfig = PNConfiguration()
@@ -40,8 +40,8 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.jinja_env.filters['zip'] = zip
 
+redoc = Redoc(app, '../postman/schemas/index.json')
 Session(app)
-
 CORS(app)
 
 uri = "mongodb+srv://%s:%s@%s.asjwyhf.mongodb.net/?retryWrites=true&w=majority" % (
