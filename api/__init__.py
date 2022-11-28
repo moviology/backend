@@ -8,6 +8,7 @@ import plotly.express as px
 import pandas as pd
 import pymongo
 
+from flask_restx import Api,Resource
 from bson.json_util import dumps, loads
 from pubnub.callbacks import SubscribeCallback
 from pubnub.enums import PNStatusCategory, PNOperationType
@@ -21,8 +22,9 @@ from flask_cors import CORS
 from flask_redoc import Redoc
 from passlib.hash import sha256_crypt
 from pymongo import MongoClient
+import jinja2
 
-with open("config/.secrets.json") as config_file:
+with open("../config/.secrets.json") as config_file:
     config = json.load(config_file)
 
 pnconfig = PNConfiguration()
@@ -39,6 +41,8 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.jinja_env.filters['zip'] = zip
+
+api = Api(app)
 
 redoc = Redoc(app, '../postman/schemas/index.json')
 Session(app)
@@ -126,7 +130,6 @@ class MySubscribeCallback(SubscribeCallback):
             print("ABOUT TO SEND DATA")
             print(new_biodata)
 
-
             bio_data.insert_one(new_biodata)
         elif type(message.message) == list:
             # bio_object = json.loads(message.message)
@@ -150,36 +153,35 @@ class MySubscribeCallback(SubscribeCallback):
         print(message.publisher)
 
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    if not session.get("name"):
-        return redirect("/authenticate")
-    return redirect("/my_reviews")
+# @app.route("/", methods=["GET", "POST"])
+# def index():
+#     if not session.get("name"):
+#         return redirect("/authenticate")
+#     return redirect("/my_reviews")
 
 
-@app.route("/register", methods=['GET', 'POST'])
-def register():
-    if request.method == "POST":
+@api.route('/register')
+class Register(Resource):
+    def post(self):
         user_name = request.form.get("name")
         user_email = request.form.get("email")
         user_pw = request.form.get("password")
 
         if users_data.find_one({"email": user_email}) is not None:
-            return render_template("registerFail.html")
-        else:
-            encrypted_password = sha256_crypt.hash(user_pw)
-            new_user = {
-                "name": user_name,
-                "email": user_email,
-                "password": encrypted_password
-            }
-            users_data.insert_one(new_user)
+            return {"message": "User already exists", "success": "false", "data": ""}
 
-            fetched_user = users_data.find_one({"email": user_email})
-            session["name"] = fetched_user["_id"]
+        encrypted_password = sha256_crypt.hash(user_pw)
+        new_user = {
+            "name": user_name,
+            "email": user_email,
+            "password": encrypted_password
+        }
+        users_data.insert_one(new_user)
 
-            return render_template("index.html")
-    return render_template("register.html")
+        fetched_user = users_data.find_one({"email": user_email})
+        session["name"] = fetched_user["_id"]
+
+        return {"message": "Registration Successful", "success": "true", "data": {"access_token": "JWT_TOKEN"}}
 
 
 @app.route("/authenticate", methods=["GET", "POST"])
@@ -246,11 +248,17 @@ def view_biodata(dataset_id):
 
     count = 0
 
+    print(data)
+
     for x in data:
-        print(x)
+
         timestamps = x["timestamp"]
         heart_rates = x["heart_rate"]
         sweats = x["sweat"]
+
+        print(timestamps)
+        print(heart_rates)
+        print(sweat)
 
         data_ = {"timestamps": timestamps, "heart_rate": heart_rates, "sweats": sweats}
 
