@@ -126,6 +126,7 @@ class MySubscribeCallback(SubscribeCallback):
             print("ABOUT TO SEND DATA")
             print(new_biodata)
 
+
             bio_data.insert_one(new_biodata)
         elif type(message.message) == list:
             # bio_object = json.loads(message.message)
