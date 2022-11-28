@@ -60,7 +60,7 @@
         },
         "/user/login": {
             "post": {
-                "summary": "Login in to Moviology",
+                "summary": "Login to Moviology",
                 "requestBody": {
                     "content": {
                         "application/json": {
@@ -116,7 +116,7 @@
         },
         "/user/logout": {
             "post": {
-                "summary": "Login in to Moviology",
+                "summary": "Logout from Moviology",
                 "security": [
                     {
                         "ApiKey": []
