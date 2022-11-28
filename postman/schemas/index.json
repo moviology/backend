@@ -1,0 +1,374 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "version": "1.0.0",
+        "title": "Moviology API",
+        "description": "Flask API on DigitialOcean"
+    },
+    "servers": [
+        {
+            "description": "Flask REST API Hosted on DigitalOcean",
+            "url": "https://api.moviology.org/v1"
+        }
+    ],
+    "paths": {
+        "/user/register": {
+            "post": {
+                "summary": "Register a new account",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Registration successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RegisterResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User already exists",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Password Incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/login": {
+            "post": {
+                "summary": "Login in to Moviology",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login was successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Password Incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Password Incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/logout": {
+            "post": {
+                "summary": "Login in to Moviology",
+                "security": [
+                    {
+                        "ApiKey": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "description": "Empty Object",
+                                "type": "object",
+                                "properties": {}
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login was successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Password Incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user/resume": {
+            "post": {
+                "summary": "Check if user's JWT is still valid",
+                "security": [
+                    {
+                        "ApiKey": []
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "description": "Empty Object",
+                                "type": "object",
+                                "properties": {}
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Token is still valid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResumeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Token has expired",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Password Incorrect",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "RegisterRequest": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "New user name",
+                        "type": "string"
+                    },
+                    "email": {
+                        "description": "New user email",
+                        "type": "string"
+                    },
+                    "password": {
+                        "description": "New user password",
+                        "type": "string"
+                    }
+                }
+            },
+            "RegisterResponse": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "success",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "description": "Readable message",
+                        "type": "string"
+                    },
+                    "success": {
+                        "description": "Was request successful",
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "description": "Response Data",
+                        "type": "object",
+                        "properties": {
+                            "access_token": {
+                                "description": "JWT Token",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "LoginRequest": {
+                "type": "object",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "description": "New user email",
+                        "type": "string"
+                    },
+                    "password": {
+                        "description": "New user password",
+                        "type": "string"
+                    }
+                }
+            },
+            "LoginResponse": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "success",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "description": "Readable message",
+                        "type": "string"
+                    },
+                    "success": {
+                        "description": "Was request successful",
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "description": "Response Data",
+                        "type": "object",
+                        "properties": {
+                            "access_token": {
+                                "description": "JWT Token",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "User name",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "ResumeResponse": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "success",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "description": "Readable message",
+                        "type": "string"
+                    },
+                    "success": {
+                        "description": "Was request successful",
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "description": "Response Data",
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "description": "User name",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "required": [
+                    "message",
+                    "success",
+                    "data"
+                ],
+                "properties": {
+                    "message": {
+                        "description": "A human readable error message",
+                        "type": "string"
+                    },
+                    "success": {
+                        "description": "Was request successful",
+                        "type": "boolean"
+                    },
+                    "data": {
+                        "description": "An empty object",
+                        "type": "object"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "ApiKey": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}
