@@ -168,7 +168,7 @@ class Register(Resource):
         user_pw = request.form.get("password")
 
         if users_data.find_one({"email": user_email}) is not None:
-            return {"message": "User already exists", "success": "false", "data": ""}
+            return {"message": "User already exists", "success": "false", "data": {}}, 401
 
         encrypted_password = sha256_crypt.hash(user_pw)
         new_user = {
@@ -181,32 +181,21 @@ class Register(Resource):
         fetched_user = users_data.find_one({"email": user_email})
         session["name"] = fetched_user["_id"]
 
-        return {"message": "Registration Successful", "success": "true", "data": {"access_token": "JWT_TOKEN"}}
+        return {"message": "Registration Successful", "success": "true", "data": {"access_token": "JWT_TOKEN"}}, 200
 
 
-@app.route("/authenticate", methods=["GET", "POST"])
-def authenticate():
-    if session.get("name"):
-        return render_template("index.html")
-    return render_template("authentication.html")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
+@api.route('/login')
+class Login(Resource):
+    def post(self):
         user_email = request.form.get("email")
         user_pw = request.form.get("password")
         fetched_user = users_data.find_one({"email": user_email})
 
         if fetched_user is None or not sha256_crypt.verify(user_pw, fetched_user['password']):
-            print("Incorrect login details")
-            return render_template("loginFail.html")
+            return {"message": "Incorrect login details", "success": "false", "data": {}}
         else:
-            print("Logged in successfully")
             session["name"] = fetched_user["_id"]
-
-        return render_template("index.html")
-    return render_template("login.html")
+            return {"message": "Login successful", "success": "true", "data": {"access_token": "JWT_TOKEN", "name": fetched_user['name']}}
 
 
 @app.route("/logout")
