@@ -7,14 +7,21 @@ import threading
 import plotly.express as px
 import pandas as pd
 import pymongo
+import redis
 
-from flask_restx import Api,Resource
+from datetime import timedelta, date
+from flask_restx import Api, Resource
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import get_jwt
 from bson.json_util import dumps, loads
 from pubnub.callbacks import SubscribeCallback
 from pubnub.enums import PNStatusCategory, PNOperationType
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
-from datetime import date
 from urllib.parse import quote_plus
 from flask import Flask, redirect, render_template, request, session, jsonify
 from flask_session import Session
@@ -41,6 +48,29 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.jinja_env.filters['zip'] = zip
+
+ACCESS_EXPIRES = timedelta(hours=1)
+
+# Set up the Flask-JWT-Extended extension
+app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = ACCESS_EXPIRES
+jwt = JWTManager(app)
+
+# Setup our redis connection for storing the blocklisted tokens. You will probably
+# want your redis instance configured to persist data to disk, so that a restart
+# does not cause your application to forget that a JWT was revoked.
+jwt_redis_blocklist = redis.StrictRedis(
+    host="localhost", port=6379, db=0, decode_responses=True
+)
+
+
+# Callback function to check if a JWT exists in the redis blocklist
+@jwt.token_in_blocklist_loader
+def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
+    jti = jwt_payload["jti"]
+    token_in_redis = jwt_redis_blocklist.get(jti)
+    return token_in_redis is not None
+
 
 api = Api(app)
 
@@ -179,9 +209,9 @@ class Register(Resource):
         users_data.insert_one(new_user)
 
         fetched_user = users_data.find_one({"email": user_email})
-        session["name"] = fetched_user["_id"]
+        access_token = create_access_token(identity=str(fetched_user['_id']))
 
-        return {"message": "Registration Successful", "success": "true", "data": {"access_token": "JWT_TOKEN"}}, 200
+        return {"message": "Registration Successful", "success": "true", "data": {"access_token": access_token}}, 200
 
 
 @api.route('/login')
@@ -192,16 +222,25 @@ class Login(Resource):
         fetched_user = users_data.find_one({"email": user_email})
 
         if fetched_user is None or not sha256_crypt.verify(user_pw, fetched_user['password']):
-            return {"message": "Incorrect login details", "success": "false", "data": {}}
+            return {"message": "Incorrect login details", "success": "false", "data": {}}, 403
         else:
-            session["name"] = fetched_user["_id"]
-            return {"message": "Login successful", "success": "true", "data": {"access_token": "JWT_TOKEN", "name": fetched_user['name']}}
+            access_token = create_access_token(identity=str(fetched_user['_id']))
+            print(access_token)
+            return {"message": "Login successful", "success": "true", "data": {"access_token": access_token, "name": fetched_user['name']}}, 200
 
 
-@app.route("/logout")
-def logout():
-    session["name"] = None
-    return redirect("/")
+
+# Endpoint for revoking the current users access token. Save the JWTs unique
+# identifier (jti) in redis. Also set a Time to Live (TTL)  when storing the JWT
+# so that it will automatically be cleared out of redis after the token expires.
+
+@api.route("/logout")
+class Logout(Resource):
+    @jwt_required()
+    def delete(self):
+        jti = get_jwt()["jti"]
+        jwt_redis_blocklist.set(jti, "", ex=ACCESS_EXPIRES)
+        return {"message": "Logout successful", "success": "true", "data": {}}
 
 
 @app.route("/my_reviews")
