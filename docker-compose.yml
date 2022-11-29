@@ -22,3 +22,14 @@ services:
          - 8001:80
       stdin_open: true
       tty: true
+
+   redis:
+      build:
+          context: .
+          dockerfile: ./docker/redis.Dockerfile
+      container_name: redis
+      init: true
+      ports:
+         - 6379:6379 
+      stdin_open: true
+      tty: true

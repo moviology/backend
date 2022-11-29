@@ -19,7 +19,7 @@ function Print-Usage
    Write-Host "`nARGS:" -ForegroundColor Yellow
    Write-Host "   SERVER" -ForegroundColor Green
    Write-Host "      This argument is optional"
-   Write-Host "      Possible values: nginx, apache"
+   Write-Host "      Possible values: nginx, apache, redis"
 
    Write-Host "`nOPTIONS:" -ForegroundColor Yellow
    Write-Host "   -Start" -ForegroundColor Green
@@ -93,7 +93,7 @@ function Systemd-Status {
 if (
       ($Start.IsPresent + $Stop.IsPresent + $Status.IsPresent -ne 1) -or
       ($args.Count -gt 1) -or
-      ($args[0] -and ($args[0] -ne "nginx") -and ($args[0] -ne "apache"))
+      ($args[0] -and ($args[0] -ne "nginx") -and ($args[0] -ne "apache") -and ($args[0] -ne "redis"))
    ) {
    Print-Usage
    exit 1
@@ -103,7 +103,7 @@ if (
 if (!$SkipBuild -and $Start) {
    Write-Host "`nSCRIPT: Building Docker Containers" -ForegroundColor DarkGreen
    try {
-      iex "docker-compose up -d --build"
+      iex "docker-compose up -d --build $args"
    } catch {
       Write-Host "ERROR: Failed to build Docker containers" -ForegroundColor Red
       exit 1
@@ -115,6 +115,10 @@ if (!$SkipBuild -and $Start) {
 # systemd operations
 if ($Start.IsPresent) {
    $ComposeService.ForEach({
+      if ($_ -eq "redis") {
+         Write-Host "`nSCRIPT: $_ server started" -ForegroundColor DarkGreen
+         continue
+      }
       try {
          Write-Host "`nSCRIPT: Starting $_ server..." -ForegroundColor DarkGreen
          $ServerName = if ($_ -eq "nginx") {"nginx"} else {"apache2"}
@@ -128,6 +132,10 @@ if ($Start.IsPresent) {
 
 if ($Status.IsPresent) {
    $ComposeService.ForEach({
+      if ($_ -eq "redis") {
+         Write-Host "`nSCRIPT: Option not available for $_ server" -ForegroundColor DarkYellow
+         continue
+      }
       try {
          Write-Host "`nSCRIPT: Retrieving $_ server status..." -ForegroundColor DarkGreen
          $ServerName = if ($_ -eq "nginx") {"nginx"} else {"apache2"}
@@ -143,14 +151,15 @@ if ($Stop.IsPresent) {
    $ComposeService.ForEach({
       try {
          Write-Host "`nSCRIPT: Stopping $_ server..." -ForegroundColor DarkGreen
-         $ServerName = if ($_ -eq "nginx") {"nginx"} else {"apache2"}
-         Systemd-Stop -compose_service $_ -systemd_service @($ServerName, "supervisor")
+         # $ServerName = if ($_ -eq "nginx") {"nginx"} else {"apache2"}
+         # Systemd-Stop -compose_service $_ -systemd_service @($ServerName, "supervisor")
+         iex "docker-compose stop $_" -ErrorAction Stop
       } catch {
          Write-Host "ERROR: $_" -ForegroundColor Red
          exit 1
       }
    })
 
-   Write-Host "`nSCRIPT: Servers have been stopped.`n`tRun 'docker-compose stop' to stop the containers." -ForegroundColor Blue
+   # Write-Host "`nSCRIPT: Servers have been stopped.`n`tRun 'docker-compose stop' to stop the containers." -ForegroundColor Blue
 } 
 
