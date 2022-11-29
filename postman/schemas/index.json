@@ -81,18 +81,8 @@
                             }
                         }
                     },
-                    "401": {
-                        "description": "User not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorResponse"
-                                }
-                            }
-                        }
-                    },
                     "403": {
-                        "description": "Password Incorrect",
+                        "description": "Incorrect credentials",
                         "content": {
                             "application/json": {
                                 "schema": {
