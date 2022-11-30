@@ -4,8 +4,8 @@ import string
 import time
 import certifi
 import threading
-import plotly.express as px
 import pandas as pd
+import plotly.express as px
 import pymongo
 import redis
 
@@ -31,7 +31,7 @@ from passlib.hash import sha256_crypt
 from pymongo import MongoClient
 import jinja2
 
-with open("../config/.secrets.json") as config_file:
+with open("config/.secrets.json") as config_file:
     config = json.load(config_file)
 
 pnconfig = PNConfiguration()
@@ -69,6 +69,7 @@ jwt_redis_blocklist = redis.StrictRedis(
 def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
     jti = jwt_payload["jti"]
     token_in_redis = jwt_redis_blocklist.get(jti)
+    print(token_in_redis)
     return token_in_redis is not None
 
 
