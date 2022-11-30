@@ -11,7 +11,7 @@ import redis
 
 from datetime import timedelta, date
 from flask_restx import Api, Resource
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, exceptions
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import JWTManager
@@ -47,6 +47,7 @@ app.config["SECRET_KEY"] = config.get("SECRET_KEY")
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config['CORS_HEADERS'] = 'Content-Type'
+app.config['PROPAGATE_EXCEPTIONS'] = True
 app.jinja_env.filters['zip'] = zip
 
 ACCESS_EXPIRES = timedelta(hours=1)
@@ -54,7 +55,9 @@ ACCESS_EXPIRES = timedelta(hours=1)
 # Set up the Flask-JWT-Extended extension
 app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = ACCESS_EXPIRES
+api = Api(app)
 jwt = JWTManager(app)
+jwt._set_error_handler_callbacks(api)
 
 # Setup our redis connection for storing the blocklisted tokens. You will probably
 # want your redis instance configured to persist data to disk, so that a restart
@@ -69,10 +72,11 @@ jwt_redis_blocklist = redis.StrictRedis(
 def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
     jti = jwt_payload["jti"]
     token_in_redis = jwt_redis_blocklist.get(jti)
+    print(token_in_redis)
     if token_in_redis is not None:
-        return {"message": "Token has been revoked", "success": False, "data": {}}, 403
+        return {"message": "Token has been destroyed", "success": False, "data": {}}, 403
 
-api = Api(app)
+
 
 redoc = Redoc(app, '../postman/schemas/index.json')
 Session(app)
@@ -190,6 +194,12 @@ class MySubscribeCallback(SubscribeCallback):
 #     return redirect("/my_reviews")
 
 
+@api.errorhandler(exceptions.RevokedTokenError)
+def handle_root_exception(error):
+    '''Return a custom message and 400 status code'''
+    return {'message': 'Token has been revoked', 'success': False, 'data': {}}, 403
+
+
 @api.route('/register')
 class Register(Resource):
     def post(self):
@@ -238,23 +248,16 @@ class Login(Resource):
 class Logout(Resource):
     @jwt_required()
     def delete(self):
-        try:
-            jti = get_jwt()["jti"]
-            jwt_redis_blocklist.set(jti, "", ex=ACCESS_EXPIRES)
-            return {"message": "Logout successful", "success": True, "data": {}}
-        except:
-            return {"message": "Logout failed", "success": False, "data": {}}
+        jti = get_jwt()["jti"]
+        jwt_redis_blocklist.set(jti, "", ex=ACCESS_EXPIRES)
+        return {"message": "Logout successful", "success": True, "data": {}}
 
 
 @api.route("/resume")
 class Resume(Resource):
-    try:
-        @jwt_required()
-        def post(self):
-            return {"message": "Token is valid", "success": True, "data": {}}
-    except:
-        def post(self):
-            return {"message": "Token is revoked", "success": False, "data": {}}
+    @jwt_required()
+    def post(self):
+        return {"message": "Token is valid", "success": True, "data": {}}
 
 
 
