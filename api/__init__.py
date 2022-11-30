@@ -69,9 +69,8 @@ jwt_redis_blocklist = redis.StrictRedis(
 def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
     jti = jwt_payload["jti"]
     token_in_redis = jwt_redis_blocklist.get(jti)
-    print(token_in_redis)
-    return token_in_redis is not None
-
+    if token_in_redis is not None:
+        return {"message": "Token has been revoked", "success": False, "data": {}}, 403
 
 api = Api(app)
 
@@ -199,7 +198,7 @@ class Register(Resource):
         user_pw = request.form.get("password")
 
         if users_data.find_one({"email": user_email}) is not None:
-            return {"message": "User already exists", "success": "false", "data": {}}, 401
+            return {"message": "User already exists", "success": False, "data": {}}, 401
 
         encrypted_password = sha256_crypt.hash(user_pw)
         new_user = {
@@ -212,7 +211,7 @@ class Register(Resource):
         fetched_user = users_data.find_one({"email": user_email})
         access_token = create_access_token(identity=str(fetched_user['_id']))
 
-        return {"message": "Registration Successful", "success": "true", "data": {"access_token": access_token}}, 200
+        return {"message": "Registration Successful", "success": True, "data": {"access_token": access_token}}, 200
 
 
 @api.route('/login')
@@ -223,11 +222,11 @@ class Login(Resource):
         fetched_user = users_data.find_one({"email": user_email})
 
         if fetched_user is None or not sha256_crypt.verify(user_pw, fetched_user['password']):
-            return {"message": "Incorrect login details", "success": "false", "data": {}}, 403
+            return {"message": "Incorrect login details", "success": False, "data": {}}, 403
         else:
             access_token = create_access_token(identity=str(fetched_user['_id']))
             print(access_token)
-            return {"message": "Login successful", "success": "true", "data": {"access_token": access_token, "name": fetched_user['name']}}, 200
+            return {"message": "Login successful", "success": True, "data": {"access_token": access_token, "name": fetched_user['name']}}, 200
 
 
 
@@ -239,9 +238,25 @@ class Login(Resource):
 class Logout(Resource):
     @jwt_required()
     def delete(self):
-        jti = get_jwt()["jti"]
-        jwt_redis_blocklist.set(jti, "", ex=ACCESS_EXPIRES)
-        return {"message": "Logout successful", "success": "true", "data": {}}
+        try:
+            jti = get_jwt()["jti"]
+            jwt_redis_blocklist.set(jti, "", ex=ACCESS_EXPIRES)
+            return {"message": "Logout successful", "success": True, "data": {}}
+        except:
+            return {"message": "Logout failed", "success": False, "data": {}}
+
+
+@api.route("/resume")
+class Resume(Resource):
+    try:
+        @jwt_required()
+        def post(self):
+            return {"message": "Token is valid", "success": True, "data": {}}
+    except:
+        def post(self):
+            return {"message": "Token is revoked", "success": False, "data": {}}
+
+
 
 
 @app.route("/my_reviews")
