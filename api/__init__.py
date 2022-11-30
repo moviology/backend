@@ -46,9 +46,9 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = config.get("SECRET_KEY")
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
-app.config['CORS_HEADERS'] = 'Content-Type'
-app.config['PROPAGATE_EXCEPTIONS'] = True
-app.jinja_env.filters['zip'] = zip
+app.config["CORS_HEADERS"] = "Content-Type"
+app.config["PROPAGATE_EXCEPTIONS"] = True
+app.jinja_env.filters["zip"] = zip
 
 ACCESS_EXPIRES = timedelta(hours=1)
 
@@ -74,11 +74,14 @@ def check_if_token_is_revoked(jwt_header, jwt_payload: dict):
     token_in_redis = jwt_redis_blocklist.get(jti)
     print(token_in_redis)
     if token_in_redis is not None:
-        return {"message": "Token has been destroyed", "success": False, "data": {}}, 403
+        return {
+            "message": "Token has been destroyed",
+            "success": False,
+            "data": {},
+        }, 403
 
 
-
-redoc = Redoc(app, '../postman/schemas/index.json')
+redoc = Redoc(app, "../postman/schemas/index.json")
 Session(app)
 CORS(app)
 
@@ -149,9 +152,7 @@ class MySubscribeCallback(SubscribeCallback):
         print(message.message)
         if message.message == "stop":
             print("you have been stopped")
-            latest_review = reviews_data.find_one(
-                sort=[('_id', pymongo.DESCENDING)]
-            )
+            latest_review = reviews_data.find_one(sort=[("_id", pymongo.DESCENDING)])
             print(latest_review)
 
             new_biodata = {
@@ -159,7 +160,7 @@ class MySubscribeCallback(SubscribeCallback):
                 "timestamp": timestamp,
                 "heart_rate": heart_rate,
                 "sweat": sweat,
-                "machine_id": machine_id[0]
+                "machine_id": machine_id[0],
             }
             print("ABOUT TO SEND DATA")
             print(new_biodata)
@@ -196,11 +197,11 @@ class MySubscribeCallback(SubscribeCallback):
 
 @api.errorhandler(exceptions.RevokedTokenError)
 def handle_root_exception(error):
-    '''Return a custom message and 400 status code'''
-    return {'message': 'Token has been revoked', 'success': False, 'data': {}}, 403
+    """Return a custom message and 400 status code"""
+    return {"message": "Token has been revoked", "success": False, "data": {}}, 403
 
 
-@api.route('/register')
+@api.route("/register")
 class Register(Resource):
     def post(self):
         user_name = request.form.get("name")
@@ -214,35 +215,49 @@ class Register(Resource):
         new_user = {
             "name": user_name,
             "email": user_email,
-            "password": encrypted_password
+            "password": encrypted_password,
         }
         users_data.insert_one(new_user)
 
         fetched_user = users_data.find_one({"email": user_email})
-        access_token = create_access_token(identity=str(fetched_user['_id']))
+        access_token = create_access_token(identity=str(fetched_user["_id"]))
 
-        return {"message": "Registration Successful", "success": True, "data": {"access_token": access_token}}, 200
+        return {
+            "message": "Registration Successful",
+            "success": True,
+            "data": {"access_token": access_token},
+        }, 200
 
 
-@api.route('/login')
+@api.route("/login")
 class Login(Resource):
     def post(self):
         user_email = request.form.get("email")
         user_pw = request.form.get("password")
         fetched_user = users_data.find_one({"email": user_email})
 
-        if fetched_user is None or not sha256_crypt.verify(user_pw, fetched_user['password']):
-            return {"message": "Incorrect login details", "success": False, "data": {}}, 403
+        if fetched_user is None or not sha256_crypt.verify(
+            user_pw, fetched_user["password"]
+        ):
+            return {
+                "message": "Incorrect login details",
+                "success": False,
+                "data": {},
+            }, 403
         else:
-            access_token = create_access_token(identity=str(fetched_user['_id']))
+            access_token = create_access_token(identity=str(fetched_user["_id"]))
             print(access_token)
-            return {"message": "Login successful", "success": True, "data": {"access_token": access_token, "name": fetched_user['name']}}, 200
-
+            return {
+                "message": "Login successful",
+                "success": True,
+                "data": {"access_token": access_token, "name": fetched_user["name"]},
+            }, 200
 
 
 # Endpoint for revoking the current users access token. Save the JWTs unique
 # identifier (jti) in redis. Also set a Time to Live (TTL)  when storing the JWT
 # so that it will automatically be cleared out of redis after the token expires.
+
 
 @api.route("/logout")
 class Logout(Resource):
@@ -260,18 +275,25 @@ class Resume(Resource):
         return {"message": "Token is valid", "success": True, "data": {}}
 
 
-
-
 @app.route("/my_reviews")
 def my_reviews():
     if not session.get("name"):
         return redirect("/authenticate")
 
     all_reviews = []
-    user_reviews = reviews_data.aggregate([
-        {"$match": {"user_id": session['name']}},
-        {"$lookup": {"from": 'MOVIES', "localField": 'movie_id', "foreignField": "_id", "as": "movie_id"}},
-    ])
+    user_reviews = reviews_data.aggregate(
+        [
+            {"$match": {"user_id": session["name"]}},
+            {
+                "$lookup": {
+                    "from": "MOVIES",
+                    "localField": "movie_id",
+                    "foreignField": "_id",
+                    "as": "movie_id",
+                }
+            },
+        ]
+    )
 
     for review in user_reviews:
         all_reviews.append(review)
@@ -279,7 +301,7 @@ def my_reviews():
     return render_template("reviews.html", user_reviews=all_reviews)
 
 
-@app.route("/view_biodata/<dataset_id>", methods=['GET', 'POST'])
+@app.route("/view_biodata/<dataset_id>", methods=["GET", "POST"])
 def view_biodata(dataset_id):
     # biodata = bio_data.find({"dataset_id": dataset_id})
     # dataset_id = "ipbtxxjifiugghkkiirjzhshlzjeibvjbijrogxaldghavaivxa"
@@ -309,18 +331,29 @@ def view_biodata(dataset_id):
 
         data_ = {"timestamps": timestamps, "heart_rate": heart_rates, "sweats": sweats}
 
-        df = pd.DataFrame(data_, columns=['timestamps', 'heart_rate', 'sweats'])
+        df = pd.DataFrame(data_, columns=["timestamps", "heart_rate", "sweats"])
 
         # heart rates data visualization
-        fig = px.line(df, x="timestamps", y="heart_rate", title='Graph Of Users Heart Rates Through The Movie',
-                      labels={'timestamps': 'timestamps in seconds',
-                              'heart_rate': 'heart rates in bpm'})
+        fig = px.line(
+            df,
+            x="timestamps",
+            y="heart_rate",
+            title="Graph Of Users Heart Rates Through The Movie",
+            labels={
+                "timestamps": "timestamps in seconds",
+                "heart_rate": "heart rates in bpm",
+            },
+        )
         div = fig.to_html(full_html=False)
 
         # sweat data visualization
-        fig2 = px.line(df, x="timestamps", y="sweats", title='Graph Of Users Sweat Through The Movie',
-                      labels={'timestamps': 'timestamps in seconds',
-                              'sweats': 'sweat'})
+        fig2 = px.line(
+            df,
+            x="timestamps",
+            y="sweats",
+            title="Graph Of Users Sweat Through The Movie",
+            labels={"timestamps": "timestamps in seconds", "sweats": "sweat"},
+        )
         div2 = fig2.to_html(full_html=False)
 
         heart_graphs.append(div)
@@ -329,10 +362,12 @@ def view_biodata(dataset_id):
         count = count + 1
         print(count)
 
-    return render_template("biodata.html", biodata=data, heartgraphs=heart_graphs, sweatgraphs=sweat_graphs)
+    return render_template(
+        "biodata.html", biodata=data, heartgraphs=heart_graphs, sweatgraphs=sweat_graphs
+    )
 
 
-@app.route("/book", methods=['GET', 'POST'])
+@app.route("/book", methods=["GET", "POST"])
 def book():
     possible_genres = ["Adventure", "Comedy", "Action", "Sci-Fi"]
 
@@ -352,7 +387,7 @@ def book():
             "_id": movie_id,
             "name": name,
             "genre": genres,
-            "user_id": session["name"]
+            "user_id": session["name"],
         }
         movies_data.insert_one(new_movie)
 
@@ -364,7 +399,7 @@ def book():
             "date": str(date.today()),
             "user_id": session["name"],
             "dataset_id": dataset_id,
-            "movie_id": movie_id
+            "movie_id": movie_id,
         }
         reviews_data.insert_one(new_review)
 
@@ -373,7 +408,7 @@ def book():
 
 def get_random_string(length):
     letters = string.ascii_lowercase
-    result_str = ''.join(random.choice(letters) for _ in range(length))
+    result_str = "".join(random.choice(letters) for _ in range(length))
     return result_str
 
 
