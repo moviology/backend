@@ -1,10 +1,9 @@
-from pymongo import MongoClient
-from urllib.parse import quote_plus
 import json
 import certifi
+from pymongo import MongoClient
+from urllib.parse import quote_plus
+from main import config
 
-with open("../config/.secrets.json") as config_file:
-    config = json.load(config_file)
 
 uri = "mongodb+srv://%s:%s@%s.asjwyhf.mongodb.net/?retryWrites=true&w=majority" % (
     quote_plus(config.get("MONGO_USER")),
@@ -187,7 +186,7 @@ def get_max_timestamp_in_all_documents():
         data = bio_data.aggregate([
             {"$project":
                 {"dataset_id": 1, "max_timestamp": {"$max": "$timestamp"}}
-            }
+             }
         ])
         return data
     except Exception as e:
@@ -200,7 +199,7 @@ def get_max_timestamp_by_dataset_id(dataset_id):
             {"$match": {"dataset_id": dataset_id}},
             {"$project":
                 {"dataset_id": dataset_id, "max_timestamp": {"$max": "$timestamp"}}
-            }
+             }
         ])
         data_list = list(data)
         data_index_0 = data_list[0]
@@ -214,7 +213,7 @@ def get_min_timestamp_in_all_documents():
         data = bio_data.aggregate([
             {"$project":
                 {"dataset_id": 1, "min_timestamp": {"$min": "$timestamp"}}
-            }
+             }
         ])
         return data
     except Exception as e:
@@ -227,7 +226,7 @@ def get_min_timestamp_by_dataset_id(dataset_id):
             {"$match": {"dataset_id": dataset_id}},
             {"$project":
                 {"dataset_id": dataset_id, "min_timestamp": {"$min": "$timestamp"}}
-            }
+             }
         ])
         data_list = list(data)
         data_index_0 = data_list[0]
@@ -241,7 +240,7 @@ def get_max_heart_rate_in_all_documents():
         data = bio_data.aggregate([
             {"$project":
                 {"dataset_id": 1, "max_heart_rate": {"$max": "$heart_rate"}}
-            }
+             }
         ])
         return data
     except Exception as e:
@@ -254,7 +253,7 @@ def get_max_heart_rate_by_dataset_id(dataset_id):
             {"$match": {"dataset_id": dataset_id}},
             {"$project":
                 {"dataset_id": dataset_id, "max_heart_rate": {"$max": "$heart_rate"}}
-            }
+             }
         ])
         data_list = list(data)
         data_index_0 = data_list[0]
@@ -268,7 +267,7 @@ def get_min_heart_rate_in_all_documents():
         data = bio_data.aggregate([
             {"$project":
                 {"dataset_id": 1, "min_heart_rate": {"$min": "$heart_rate"}}
-            }
+             }
         ])
         return data
     except Exception as e:
@@ -281,7 +280,7 @@ def get_min_heart_rate_by_dataset_id(dataset_id):
             {"$match": {"dataset_id": dataset_id}},
             {"$project":
                 {"dataset_id": dataset_id, "min_heart_rate": {"$min": "$heart_rate"}}
-            }
+             }
         ])
         data_list = list(data)
         data_index_0 = data_list[0]
@@ -295,7 +294,7 @@ def get_max_sweat_in_all_documents():
         data = bio_data.aggregate([
             {"$project":
                 {"dataset_id": 1, "max_sweat": {"$max": "$sweat"}}
-            }
+             }
         ])
         return data
     except Exception as e:
@@ -308,7 +307,7 @@ def get_max_sweat_by_dataset_id(dataset_id):
             {"$match": {"dataset_id": dataset_id}},
             {"$project":
                 {"dataset_id": dataset_id, "max_sweat": {"$max": "$sweat"}}
-            }
+             }
         ])
         data_list = list(data)
         data_index_0 = data_list[0]
@@ -322,7 +321,7 @@ def get_min_sweat_in_all_documents():
         data = bio_data.aggregate([
             {"$project":
                 {"dataset_id": 1, "min_sweat": {"$min": "$sweat"}}
-            }
+             }
         ])
         return data
     except Exception as e:
@@ -335,7 +334,7 @@ def get_min_sweat_by_dataset_id(dataset_id):
             {"$match": {"dataset_id": dataset_id}},
             {"$project":
                 {"dataset_id": dataset_id, "min_sweat": {"$min": "$sweat"}}
-            }
+             }
         ])
         data_list = list(data)
         data_index_0 = data_list[0]
@@ -401,16 +400,3 @@ def get_all_related_data_to_reviews_by_review_id(review_id):
         return data_index_0
     except Exception as e:
         raise e
-
-
-
-
-
-
-
-
-
-
-
-
-
