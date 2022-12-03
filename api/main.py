@@ -85,5 +85,7 @@ def add_headers(response):
 # Setup API Routes #
 #####################
 from routes.auth import api as auth
+from routes.reviews import api as reviews
 
 api.add_namespace(auth, path="/auth")
+api.add_namespace(reviews, path="/reviews")

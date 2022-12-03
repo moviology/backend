@@ -10,8 +10,8 @@ from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 
 from schemas.auth import LoginSchema, LogoutSchema, RefreshSchema, RegisterSchema
 from core.redis import access_blocklist, refresh_blocklist
-from core.db import users_data
-
+from core.db import users_data, reviews_data
+from nanoid import generate
 
 ########################
 # Initialize namespace #
@@ -52,6 +52,7 @@ class Register(Resource):
 
         encrypted_password = sha256_crypt.hash(user_pw)
         new_user = {
+            "_id": generate(),
             "name": user_name,
             "email": user_email,
             "password": encrypted_password,
