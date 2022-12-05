@@ -75,7 +75,6 @@ class Register(Resource):
 
 @api.route("/login")
 class LoginHandler(Resource):
-    @validate_request(LoginSchema)
     def post(self):
         """
         Check if the user exists in database.
@@ -85,6 +84,8 @@ class LoginHandler(Resource):
         user_email = request.json["email"]
         user_pw = request.json["password"]
         fetched_user = users_data.find_one({"email": user_email})
+
+        print(user_email)
 
         if fetched_user is None:
             return {'message': 'User not found', 'success': False, 'data': {}}, 401

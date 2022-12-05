@@ -64,3 +64,42 @@ class Profile(Resource):
             return {"message": "Reviews Found", "success": True, "data": all_reviews}, 200
         except:
             return {"message": "Failed to load reviews", "success": False, "data": []}, 500
+
+
+@api.route("/view_biodata/<review_id>")
+class Biodata(Resource):
+    @jwt_required()
+    def get(self, review_id):
+        biodata = bio_data.find({"review_id": review_id})
+        data_list = []
+
+        for participant in biodata:
+            data_set_list = []
+
+            for heart_rate, sweat_rate, timestamp in zip(participant["heart_rate"], participant["sweat_rate"], participant["timestamp"]):
+                new_heart_rate = {
+                    "group": "Heart Rate",
+                    "timestamp": str(datetime.timedelta(seconds=timestamp)),
+                    "value": heart_rate
+                }
+                new_sweat_rate = {
+                    "group": "Perspiration",
+                    "timestamp": str(datetime.timedelta(seconds=timestamp)),
+                    "value": sweat_rate
+                }
+
+                data_set_list.append(new_heart_rate)
+                data_set_list.append(new_sweat_rate)
+
+            new_data_set = {
+                "machine_id": participant["machine_id"],
+                "data_set": data_set_list,
+                "average_sweat": participant["average_sweat"],
+                "average_heart_rate": participant["average_heart_rate"],
+            }
+
+            data_list.append(new_data_set)
+
+        return {"message": "Review data found", "success": True, "data": data_list}
+
+

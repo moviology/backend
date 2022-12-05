@@ -21,7 +21,7 @@ class MySubscribeCallback(SubscribeCallback):
     def __init__(self) -> None:
         super().__init__()
         self.listener_state = None
-        self.dataset_id = None
+        self.review_id = None
         self.machine_id = None
 
     def presence(self, pubnub, event):
@@ -56,24 +56,26 @@ class MySubscribeCallback(SubscribeCallback):
         if self.listener_state == "STARTED" or self.listener_state == "RESUMED":
             bio_object = json.loads(message.message)
 
-            self.dataset_id = bio_object[0]["biodata"][0]
+            self.review_id = bio_object[0]["biodata"][0]
             self.machine_id = bio_object[0]["biodata"][1]
             heart_rate = bio_object[0]["biodata"][2]
             sweat_rate = bio_object[0]["biodata"][3]
             timestamp = bio_object[0]["biodata"][4]
 
-            heart_list.lpush(f"{self.dataset_id}:{self.machine_id}", heart_rate)
-            sweat_list.lpush(f"{self.dataset_id}:{self.machine_id}", sweat_rate)
-            timestamp_list.lpush(f"{self.dataset_id}:{self.machine_id}", timestamp)
+            heart_list.lpush(f"{self.review_id}:{self.machine_id}", heart_rate)
+            sweat_list.lpush(f"{self.review_id}:{self.machine_id}", sweat_rate)
+            timestamp_list.lpush(f"{self.review_id}:{self.machine_id}", timestamp)
         elif self.listener_state == "PAUSED":
             pass
         elif self.listener_state == "STOP":
             new_biodata = {
-                "dataset_id": self.dataset_id,
+                "review_id": self.review_id,
                 "machine_id": self.machine_id,
-                "heart_rate": heart_list.lrange(f"{self.dataset_id}:{self.machine_id}", 0, -1),
-                "sweat": sweat_list.lrange(f"{self.dataset_id}:{self.machine_id}", 0, -1),
-                "timestamp": timestamp_list.lrange(f"{self.dataset_id}:{self.machine_id}", 0, -1),
+                "heart_rate": heart_list.lrange(f"{self.review_id}:{self.machine_id}", 0, -1),
+                "sweat": sweat_list.lrange(f"{self.review_id}:{self.machine_id}", 0, -1),
+                "timestamp": timestamp_list.lrange(f"{self.review_id}:{self.machine_id}", 0, -1),
+                "average_sweat": 0,
+                "average_heart_rate": 0
             }
             print("ABOUT TO SEND DATA")
             print(new_biodata)
