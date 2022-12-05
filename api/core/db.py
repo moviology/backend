@@ -399,3 +399,11 @@ def get_all_related_data_to_reviews_by_review_id(review_id):
         return data_index_0
     except Exception as e:
         raise e
+
+
+def get_movie_file_path_by_movie_file_path(movie_path):
+    try:
+        data = movies_data.find({"movie_file_path": movie_path})
+        return data
+    except Exception as e:
+        raise e
