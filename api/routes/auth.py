@@ -75,6 +75,7 @@ class Register(Resource):
 
 @api.route("/login")
 class LoginHandler(Resource):
+    @validate_request(LoginSchema)
     def post(self):
         """
         Check if the user exists in database.
