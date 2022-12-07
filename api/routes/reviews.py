@@ -11,7 +11,7 @@ from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 
 from schemas.reviews import ProfileSchema
 from core.redis import access_blocklist, refresh_blocklist
-from core.db import reviews_data, users_data
+from core.db import reviews_data, users_data, bio_data
 from bson import ObjectId
 from json import dumps
 
@@ -39,12 +39,14 @@ def validate_request(Schema):
 
 @api.route("/profile")
 class Profile(Resource):
-    @validate_request(ProfileSchema)
+    # @validate_request(ProfileSchema)
     @jwt_required()
     def get(self):
         try:
             whole_token = get_jwt()
             user_id = whole_token["sub"]
+
+            print(user_id)
 
             all_reviews = []
             user_reviews = reviews_data.find({"user_id": user_id})
@@ -76,16 +78,16 @@ class Biodata(Resource):
         for participant in biodata:
             data_set_list = []
 
-            for heart_rate, sweat_rate, timestamp in zip(participant["heart_rate"], participant["sweat_rate"], participant["timestamp"]):
+            for heart_rate, sweat, timestamp in zip(participant["heart_rate"], participant["sweat"], participant["timestamp"]):
                 new_heart_rate = {
                     "group": "Heart Rate",
-                    "timestamp": str(datetime.timedelta(seconds=timestamp)),
+                    "timestamp": str(timedelta(seconds=timestamp)),
                     "value": heart_rate
                 }
                 new_sweat_rate = {
                     "group": "Perspiration",
-                    "timestamp": str(datetime.timedelta(seconds=timestamp)),
-                    "value": sweat_rate
+                    "timestamp": str(timedelta(seconds=timestamp)),
+                    "value": sweat
                 }
 
                 data_set_list.append(new_heart_rate)
