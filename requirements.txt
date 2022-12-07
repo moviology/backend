@@ -12,3 +12,4 @@ pubnub~=7.0.1
 plotly~=5.11.0
 pandas~=1.5.1
 redis
+nanoid
