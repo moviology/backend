@@ -145,13 +145,15 @@ class BookReview(Resource):
             whole_token = get_jwt()
             user_id = whole_token["sub"]
 
+            review_id = generate()
+
             new_review = {
-                "_id": generate(),
+                "_id": review_id,
                 "user_id": user_id,
                 "movie_title": movie_title,
                 "movie_description": movie_description,
                 "movie_genres": movie_genres,
-                "movie_url": movie_url,
+                "movie_url": f"{review_id}/movie.mp4",
                 "review_date": date_of_review,
                 "date_booked": str(date.today()),
                 "complete": False
@@ -170,31 +172,25 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@api.route('/uploadVideo')
+@api.route('/uploadVideo/<review_id>')
 class UploadMovie(Resource):
     @jwt_required()
-    def post(self):
+    def post(self, review_id):
         pprint(request)
-        # if 'file' not in request.files:
-        #     return {"message": "No file part in the request", "success": False, "data": []}, 400
+        if 'file' not in request.files:
+            return {"message": "No file part in the request", "success": False, "data": []}, 400
 
-        print("line 176")
         file = request.files['file']
-        print("line 178 ", file)
+
         if file.filename == '':
             return {"message": "No file selected for uploading", "success": False, "data": []}, 400
+
         if file and allowed_file(file.filename):
             # filename = secure_filename(file.filename)
-            filename = generate()
 
-            path = Path(os.path.join(UPLOAD_FOLDER, filename))
+            path = Path(os.path.join(UPLOAD_FOLDER, review_id))
             path.mkdir(parents=True, exist_ok=True)
-            file.save(os.path.join(UPLOAD_FOLDER, filename, 'movie.mp4'))
-
-            review_id = request.form['review_id']
-            filter = {'_id': review_id}
-            newvalues = {"$set": {'movie_url': filename}}
-            reviews_data.update_one(filter, newvalues)
+            file.save(os.path.join(UPLOAD_FOLDER, review_id, 'movie.mp4'))
 
             return {"message": "File successfully uploaded", "success": True, "data": {'filename': filename}}, 201
         else:
