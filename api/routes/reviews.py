@@ -1,6 +1,10 @@
 import json
+import os
+from pathlib import Path
 from datetime import timedelta, date
 from functools import wraps
+from pprint import pprint
+
 from flask_jwt_extended import create_refresh_token, decode_token
 from flask_restx.reqparse import HTTPStatus
 from passlib.hash import sha256_crypt
@@ -21,7 +25,7 @@ from nanoid import generate
 ########################
 api = Namespace("reviews", description="Management of user reviews and related biometric data")
 
-UPLOAD_FOLDER = '../static/uploads'
+UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'mp4'}
 
 
@@ -170,16 +174,22 @@ def allowed_file(filename):
 class UploadMovie(Resource):
     @jwt_required()
     def post(self):
-        if 'file' not in request.files:
-            return {"message": "No file part in the request", "success": False, "data": []}, 400
+        pprint(request)
+        # if 'file' not in request.files:
+        #     return {"message": "No file part in the request", "success": False, "data": []}, 400
 
+        print("line 176")
         file = request.files['file']
+        print("line 178 ", file)
         if file.filename == '':
             return {"message": "No file selected for uploading", "success": False, "data": []}, 400
         if file and allowed_file(file.filename):
             # filename = secure_filename(file.filename)
             filename = generate()
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            path = Path(os.path.join(UPLOAD_FOLDER, filename))
+            path.mkdir(parents=True, exist_ok=True)
+            file.save(os.path.join(UPLOAD_FOLDER, filename, 'movie.mp4'))
 
             review_id = request.form['review_id']
             filter = {'_id': review_id}
