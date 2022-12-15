@@ -9,7 +9,7 @@ from flask_jwt_extended import create_refresh_token, decode_token
 from flask_restx.reqparse import HTTPStatus
 from passlib.hash import sha256_crypt
 
-from flask import request, jsonify
+from flask import request, jsonify, send_from_directory
 from flask_restx import Namespace, Resource
 from flask_jwt_extended import create_access_token, get_jwt, jwt_required
 
@@ -20,12 +20,13 @@ from bson import ObjectId
 from json import dumps
 from nanoid import generate
 
+import pymongo
 ########################
 # Initialize namespace #
 ########################
 api = Namespace("reviews", description="Management of user reviews and related biometric data")
 
-UPLOAD_FOLDER = 'static/uploads'
+UPLOAD_FOLDER = 'static/uploads/'
 ALLOWED_EXTENSIONS = {'mp4'}
 
 
@@ -170,13 +171,13 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@api.route('/uploadVideo')
+@api.route('/uploadVideo/<reviewId>')
 class UploadMovie(Resource):
     @jwt_required()
-    def post(self):
-        pprint(request)
-        # if 'file' not in request.files:
-        #     return {"message": "No file part in the request", "success": False, "data": []}, 400
+    def post(self, reviewId):
+        print(request)
+        if 'file' not in request.files:
+            return {"message": "No file part in the request", "success": False, "data": []}, 400
 
         print("line 176")
         file = request.files['file']
@@ -184,28 +185,41 @@ class UploadMovie(Resource):
         if file.filename == '':
             return {"message": "No file selected for uploading", "success": False, "data": []}, 400
         if file and allowed_file(file.filename):
-            # filename = secure_filename(file.filename)
             filename = generate()
+
+            print("Filename: " + filename)
 
             path = Path(os.path.join(UPLOAD_FOLDER, filename))
             path.mkdir(parents=True, exist_ok=True)
             file.save(os.path.join(UPLOAD_FOLDER, filename, 'movie.mp4'))
 
-            review_id = request.form['review_id']
-            filter = {'_id': review_id}
-            newvalues = {"$set": {'movie_url': filename}}
-            reviews_data.update_one(filter, newvalues)
+            # latest_review = reviews_data.find_one(sort=[("_id", pymongo.DESCENDING)])
+            #
+            # print("latest id: " + str(latest_review["_id"]))
 
-            return {"message": "File successfully uploaded", "success": True, "data": {'filename': filename}}, 201
+
+            filter1 = {'_id': reviewId}
+            newvalues = {"$set": {'movie_url': filename}}
+            reviews_data.update_one(filter1, newvalues)
+
+            print("Filename: " + filename)
+
+            return {"message": "File successfully uploaded", "success": True, "data": {'filename': filename}}, 200
         else:
             return {"message": "Invalid file type", "success": False, "data": []}, 201
 
 
-@api.route("/fetch_movie/<movie_id>")
+@api.route("/fetch_movie/<filename>")
 class FetchMovie(Resource):
-    def get(self, movie_id):
+    @jwt_required()
+    def post(self, filename):
         """Download a file."""
-        return send_from_directory(UPLOAD_DIRECTORY, movie_id, as_attachment=True)
+
+        return send_from_directory(f"C://Users//Kacper//OneDrive - Dundalk Institute of Technology//Year 3 Semester 5//UDP//backend_final_backend_rel2//api//static//uploads//{filename}", "movie.mp4", as_attachment=True)
+
+
+
+
 
 
 # @api.route("/fetch_movie/<filename>")
