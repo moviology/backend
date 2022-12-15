@@ -20,7 +20,6 @@ from bson import ObjectId
 from json import dumps
 from nanoid import generate
 
-import pymongo
 ########################
 # Initialize namespace #
 ########################
@@ -146,8 +145,10 @@ class BookReview(Resource):
             whole_token = get_jwt()
             user_id = whole_token["sub"]
 
+            review_id = generate()
+
             new_review = {
-                "_id": generate(),
+                "_id": review_id,
                 "user_id": user_id,
                 "movie_title": movie_title,
                 "movie_description": movie_description,
