@@ -77,7 +77,7 @@ def add_headers(response):
     response.headers['Cache-Control'] = 'no-store, max-age=0, must-revalidate'
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
-    response.headers['Content-Type'] = 'application/json; charset=utf-8'
+    # response.headers['Content-Type'] = 'application/json; multipart/form-data; charset=utf-8'
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     return response
 

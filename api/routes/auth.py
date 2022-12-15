@@ -127,6 +127,8 @@ class LogoutHandler(Resource):
         access_token_jti = get_jwt()["jti"]
         refresh_token_jti = decode_token(request.json["refresh_token"])["jti"]
 
+        print(request.json["refresh_token"])
+
         # add to blocklist
         access_blocklist.set(access_token_jti, "", ex=timedelta(hours=2))
         refresh_blocklist.set(refresh_token_jti, "", ex=timedelta(weeks=1))

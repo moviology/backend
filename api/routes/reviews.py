@@ -16,12 +16,13 @@ from bson import ObjectId
 from json import dumps
 from nanoid import generate
 
-
-
 ########################
 # Initialize namespace #
 ########################
 api = Namespace("reviews", description="Management of user reviews and related biometric data")
+
+UPLOAD_FOLDER = '../static/uploads'
+ALLOWED_EXTENSIONS = {'mp4'}
 
 
 def validate_request(Schema):
@@ -34,7 +35,9 @@ def validate_request(Schema):
                 return {'message': 'Invalid Credentials', 'success': False, 'data': error}, 401
             else:
                 return fn(*args, **kwargs)
+
         return wrapped
+
     return decorator
 
 
@@ -94,7 +97,8 @@ class Biodata(Resource):
             for participant in biodata:
                 data_set_list = []
 
-                for heart_rate, sweat, timestamp in zip(participant["heart_rate"], participant["sweat"], participant["timestamp"]):
+                for heart_rate, sweat, timestamp in zip(participant["heart_rate"], participant["sweat"],
+                                                        participant["timestamp"]):
                     new_heart_rate = {
                         "group": "Heart Rate",
                         "timestamp": str(timedelta(seconds=timestamp)),
@@ -150,7 +154,52 @@ class BookReview(Resource):
             }
             reviews_data.insert_one(new_review)
 
+            print(str(date.today()))
+            print(date_of_review)
+
             return {"message": "Review booked successfully", "success": True, "data": new_review}
         except:
             return {"message": "Failed to book review", "success": False, "data": []}
 
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+@api.route('/uploadVideo')
+class UploadMovie(Resource):
+    @jwt_required()
+    def post(self):
+        if 'file' not in request.files:
+            return {"message": "No file part in the request", "success": False, "data": []}, 400
+
+        file = request.files['file']
+        if file.filename == '':
+            return {"message": "No file selected for uploading", "success": False, "data": []}, 400
+        if file and allowed_file(file.filename):
+            # filename = secure_filename(file.filename)
+            filename = generate()
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            review_id = request.form['review_id']
+            filter = {'_id': review_id}
+            newvalues = {"$set": {'movie_url': filename}}
+            reviews_data.update_one(filter, newvalues)
+
+            return {"message": "File successfully uploaded", "success": True, "data": {'filename': filename}}, 201
+        else:
+            return {"message": "Invalid file type", "success": False, "data": []}, 201
+
+
+@api.route("/fetch_movie/<movie_id>")
+class FetchMovie(Resource):
+    def get(self, movie_id):
+        """Download a file."""
+        return send_from_directory(UPLOAD_DIRECTORY, movie_id, as_attachment=True)
+
+
+# @api.route("/fetch_movie/<filename>")
+# class UploadMovie(Resource):
+#     @jwt_required()
+#     def get(self):
+#         return redirect(url_for('static', filename='uploads/' + filename), code=301)
